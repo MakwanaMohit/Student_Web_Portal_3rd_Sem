@@ -28,3 +28,6 @@ urlpatterns = [
     path('student',include('Student_app.urls')),
     path('faculty',include('faculty.urls'))
 ]
+admin.site.site_header = 'Student Webstie Administration'
+admin.site.index_title = 'Student Website'
+admin.site.site_title = 'Student Website Administration'

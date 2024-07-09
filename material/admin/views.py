@@ -3,6 +3,9 @@ import datetime
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView
+from main.models import Sub_Syllabus
+from faculty.models import Faculty_Records
+from Student_app.models import Student_Marks
 
 
 class ThemesView(TemplateView):
@@ -54,9 +57,32 @@ class FacultyDashbordView(TemplateView):
     title = _('Dashbord')
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        fac = Faculty_Records.objects.get(user=self.request.user)
+
+        subjects = Sub_Syllabus.objects.filter(Assigned_Sub_Faculty = fac).order_by('-sub_sem')
+
+        dash_data = ()
+        row = {'semester':None, 'subject':tuple()}
+        semester = subjects[0].sub_sem
+        semester_remain = 0
+        records = Student_Marks.objects.filter(Assigned_Sub_Faculty = fac)
+        for subject in subjects:
+            if subject.sub_sem != semester:
+                row['semester'] = {'sem':semester,'sem_remain': semester_remain}
+                dash_data += (row,)
+                row = {'semester':None, 'subject':tuple()}
+                semester = subject.sub_sem
+                semester_remain = 0
+            remain = len(records.filter(subject = subject,marks_entered=False))
+            semester_remain += remain
+            row['subject'] += ({'sub_name':subject.sub_name,'sub_remain':remain},)
+        row["semester"] = {'sem': semester, 'sem_remain': semester_remain}
+        dash_data += (row,)
+        for row in dash_data:
+            print(row)
         context.update({
             'title': self.title,
-            'dddname':' this is faculty dashboard mohit is greate coder',
+            'dash_data':dash_data,
             **(self.extra_context or {})
         })
         return context

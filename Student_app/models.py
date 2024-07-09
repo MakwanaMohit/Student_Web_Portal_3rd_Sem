@@ -15,7 +15,7 @@ from faculty.models import Faculty_Records
 
 class Student(models.Model):
     stu_name = models.CharField(max_length=50,default='')
-    stu_enroll = models.CharField(max_length=12,unique=True,primary_key=True,default=000000000000)
+    stu_enroll = models.CharField(max_length=12,unique=True,primary_key=True,default=000000000000,verbose_name= 'Student Enrollment Number')
     stu_sem = models.IntegerField()
     stu_DOB = models.DateField(default=date(2007,1,1))
     stu_branch = models.CharField(max_length=110)
@@ -36,7 +36,7 @@ class Student_Marks(models.Model):
 
     id = models.CharField(max_length=25,primary_key=True,unique=True,default='hello')
     student = models.ForeignKey('Student',on_delete=models.DO_NOTHING,default='0')
-    stu_enroll = models.CharField(max_length=12,default='enrollmentno')
+    stu_enroll = models.CharField(max_length=12,default='enrollmentno',verbose_name= 'Student Enrollment Number')
     stu_sem = models.IntegerField(default=5)
     stu_term = models.CharField(max_length=5,default='tern')
     stu_name = models.CharField(max_length=50,default='name')

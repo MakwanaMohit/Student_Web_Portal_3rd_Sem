@@ -144,6 +144,7 @@ def forgot(request):
             if fac:
                 password = generate_password()
                 fac.password = password
+                # fac.password = "hello"
                 fac.save()
                 subject = 'reset password for faculty account'
                 current_url = get_current_site(request)

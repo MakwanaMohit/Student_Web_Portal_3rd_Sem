@@ -4,6 +4,7 @@ from .models import *
 
 @admin.register(Faculty_Records)
 class Faculty_RecordsAdmin(admin.ModelAdmin):
+    list_display = ('fac_name','email','user')
     def get_queryset(self, request):
         if not request.user.is_superuser:
             return Faculty_Records.objects.filter(email=request.user.email)

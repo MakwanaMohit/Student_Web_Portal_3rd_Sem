@@ -9,6 +9,17 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block content %}
+    <div style="align-content: center">
     <h2>this is faculty dashbord</h2>
-    <h2>{{ dddname }}</h2>
+    {% for item in dash_data %}
+        <p><a href="{% url 'admin:Student_app_student_marks_changelist' %}?marks_entered__exact=0&stu_sem={{item.semester.sem}}"> Semester : {{item.semester.sem}}</a></p>
+        <p>Remaining entry is {{ item.semester.sem_remain }}</p>
+        {% for subject in item.subject  %}
+        	<p>Subject name: {{ subject.sub_name }}</p>
+        	<p>remaining entry is  {{ subject.sub_remain }}</p>
+        {% endfor %}
+
+        <br>
+    {% endfor %}
+    </div>
 {% endblock %}

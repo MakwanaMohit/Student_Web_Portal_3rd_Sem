@@ -175,3 +175,5 @@ class DefaultMaterialAdminSite(LazyObject):
 
 
 site = DefaultMaterialAdminSite()
+
+# site.index_title = "i am mohit makwana"

@@ -33,6 +33,15 @@ class StudentAdmin(admin.ModelAdmin):
     list_filter = ('stu_sem','stu_branch')
     actions = ['make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        if not request.user.is_superuser:
+            if 'make_marks_entry_for_Summer_Session' in actions:
+                del actions['make_marks_entry_for_Summer_Session']
+            if 'make_marks_entry_for_Winter_Session' in actions:
+                del actions['make_marks_entry_for_Winter_Session']
+        return actions
     def changelist_view(self, request, extra_context=None):
         if 'action' in request.POST and ( request.POST['action'] == 'generate_excel' or  request.POST['action'] == 'make_marks_field'):
             if not request.POST.getlist(ACTION_CHECKBOX_NAME):
@@ -139,7 +148,7 @@ class Student_MarksAdmin(admin.ModelAdmin):
     #           'stu_branch_code','stu_name','stu_sem','session','stu_term','stu_theory_ESE',
     #           'stu_theory_PA', 'stu_practical_ESE','stu_practical_PA']
     list_display = ('id','marks_entered', 'stu_enroll', 'sub_name', 'stu_sub_code', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem','is_passed')
-    list_filter = ('sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','session','year')
+    list_filter = ('marks_entered','sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','session','year')
     actions = ['generate_excel','process_xlsx']
 
     def changelist_view(self, request, extra_context=None):
@@ -165,7 +174,9 @@ class Student_MarksAdmin(admin.ModelAdmin):
         return super().get_queryset(request)
 
 
+
     def has_delete_permission(self, request, obj=None):
+
         if obj and '11111111' in obj.id:
             return False
         return super().has_delete_permission(request, obj)

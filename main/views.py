@@ -84,9 +84,50 @@ def gtu_exam_fetch():
         print(e)
 
 
+from faker import Faker
+
+
+def change_email():
+    f = Faker()
+
+    def create_new_faculty():
+        fac = Faculty_Records()
+        fac.fac_name = f.name()
+        fac.email = f.email()
+        fac.save()
+        return fac
+
+    # Create the first two faculty members
+    fac1 = create_new_faculty()
+    fac2 = create_new_faculty()
+
+    # Initialize the subject assignment counters
+    fac1_subject_count = 0
+    fac2_subject_count = 0
+
+    for q in Sub_Syllabus.objects.all().order_by('-sub_branch_code', '-sub_sem'):
+        if fac1_subject_count < 2:
+            q.Assigned_Sub_Faculty = fac1
+            fac1_subject_count += 1
+        elif fac2_subject_count < 2:
+            q.Assigned_Sub_Faculty = fac2
+            fac2_subject_count += 1
+        else:
+            # Create a new faculty and assign the subject
+            new_fac = create_new_faculty()
+            q.Assigned_Sub_Faculty = new_fac
+            fac1, fac2 = fac2, new_fac  # Shift fac2 to fac1 and new_fac to fac2
+            fac1_subject_count, fac2_subject_count = fac2_subject_count, 1  # Reset counters
+
+        q.save()
+
+
+# Ensure to import the necessary models from your application
+
 
 def home(request):
     # gtu_exam_fetch()
+    # change_email()
     return render(request,'main/home.html')
 
 def syllabus(request):
