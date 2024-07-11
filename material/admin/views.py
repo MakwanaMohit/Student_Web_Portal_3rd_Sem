@@ -55,34 +55,125 @@ class ThemesView(TemplateView):
 
 class FacultyDashbordView(TemplateView):
     title = _('Dashbord')
+
     def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        fac = Faculty_Records.objects.get(user=self.request.user)
+
+        subjects = Sub_Syllabus.objects.filter(Assigned_Sub_Faculty=fac).order_by('-sub_sem')
+
+        marks_work = ()
+        row = {'semester': None, 'subject': tuple()}
+        semester = subjects[0].sub_sem
+        semester_remain = 0
+        semester_total = 0
+        Total = 0
+        Remain = 0
+        records = Student_Marks.objects.filter(Assigned_Sub_Faculty=fac)
+
+        pass_work = ()
+        pass_row = {'semester': None, 'subject': tuple()}
+        pass_total = 0
+        pass_remain = 0
+        semester_pass_total = 0
+        semester_pass_remain = 0
+
+        for subject in subjects:
+            if subject.sub_sem != semester:
+                row['semester'] = {'sem': semester, 'sem_remain': semester_remain, 'sem_total': semester_total}
+                marks_work += (row,)
+                row = {'semester': None, 'subject': tuple()}
+
+                pass_row['semester'] = {'sem': semester, 'sem_passed': semester_pass_remain,
+                                        'sem_total': semester_pass_total}
+                pass_work += (pass_row,)
+                pass_row = {'semester': None, 'subject': tuple()}
+
+                semester = subject.sub_sem
+                Total += semester_total
+                Remain += semester_remain
+                pass_total += semester_pass_total
+                pass_remain += semester_pass_remain
+
+                semester_remain = 0
+                semester_total = 0
+                semester_pass_remain = 0
+                semester_pass_total = 0
+
+
+            sub = records.filter(subject=subject)
+            total = len(sub)
+
+            sub_pass = sub.filter(marks_entered=True)
+            sub_passed = len(sub_pass.filter(is_passed=True))
+            sub_total = len(sub_pass)
+
+            remain = total - sub_total
+
+            semester_remain += remain
+            semester_total += total
+            semester_pass_remain += sub_passed
+            semester_pass_total += sub_total
+
+            row['subject'] += ({'sub_name': subject.sub_name, 'sub_remain': remain, 'sub_total': total},)
+            pass_row['subject'] += ({'sub_name': subject.sub_name, 'sub_passed': sub_passed, 'sub_total': sub_total},)
+
+        row["semester"] = {'sem': semester, 'sem_remain': semester_remain, 'sem_total': semester_total}
+        marks_work += (row,)
+        Total += semester_total
+        Remain += semester_remain
+
+        pass_row["semester"] = {'sem': semester, 'sem_passed': semester_pass_remain, 'sem_total': semester_pass_total}
+        pass_work += (pass_row,)
+        pass_total += semester_pass_total
+        pass_remain += semester_pass_remain
+
+        context.update({
+            'title': self.title,
+            'work': {'Total': {'total': Total, 'remain': Remain}, 'marks_work': marks_work},
+            'pass_work': {'Total': {'total': pass_total, 'passed': pass_remain}, 'marks': pass_work},
+            **(self.extra_context or {})
+        })
+        return context
+
+    def get_coccntext_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         fac = Faculty_Records.objects.get(user=self.request.user)
 
         subjects = Sub_Syllabus.objects.filter(Assigned_Sub_Faculty = fac).order_by('-sub_sem')
 
-        dash_data = ()
+        marks_work = ()
         row = {'semester':None, 'subject':tuple()}
         semester = subjects[0].sub_sem
         semester_remain = 0
+        semester_total = 0
+        Total = 0
+        Remain = 0
         records = Student_Marks.objects.filter(Assigned_Sub_Faculty = fac)
         for subject in subjects:
             if subject.sub_sem != semester:
-                row['semester'] = {'sem':semester,'sem_remain': semester_remain}
-                dash_data += (row,)
+                row['semester'] = {'sem':semester,'sem_remain': semester_remain,'sem_total': semester_total}
+                marks_work += (row,)
                 row = {'semester':None, 'subject':tuple()}
                 semester = subject.sub_sem
+                Total += semester_total
+                Remain += semester_remain
                 semester_remain = 0
-            remain = len(records.filter(subject = subject,marks_entered=False))
+                semester_total = 0
+            sub = records.filter(subject = subject)
+            remain = len(sub.filter(marks_entered=False))
+            total = len(sub)
             semester_remain += remain
-            row['subject'] += ({'sub_name':subject.sub_name,'sub_remain':remain},)
-        row["semester"] = {'sem': semester, 'sem_remain': semester_remain}
-        dash_data += (row,)
-        for row in dash_data:
-            print(row)
+            semester_total += total
+            row['subject'] += ({'sub_name':subject.sub_name,'sub_remain':remain,'sub_total':total},)
+        row["semester"] = {'sem': semester, 'sem_remain': semester_remain,'sem_total': semester_total}
+        marks_work += (row,)
+        Total += semester_total
+        Remain += semester_remain
+
         context.update({
             'title': self.title,
-            'dash_data':dash_data,
+            'work':{'Total':{'total':Total,'remain':Remain},'marks_work':marks_work},
             **(self.extra_context or {})
         })
         return context

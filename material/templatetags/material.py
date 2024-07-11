@@ -21,6 +21,18 @@ CL_NAME_RE = re.compile('name=\"([^"]*)\"')
 CHECK_CHECKBOX_TYPE = 'type="checkbox"'
 DOT = '.'
 
+@register.filter
+def percentage(remain, total):
+    try:
+        return (remain / total) * 100
+    except (ValueError, ZeroDivisionError):
+        return 100
+@register.filter
+def percentageinv(remain, total):
+    try:
+        return 100.000 - ((remain/ total) * 100)
+    except (ValueError, ZeroDivisionError):
+        return 100
 
 @register.filter
 def admin_change_list_value(result_checkbox_html):

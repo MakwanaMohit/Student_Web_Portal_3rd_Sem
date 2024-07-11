@@ -1,25 +1,183 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+{% load i18n static material %}
 
 {% block extrastyle %}
-  {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static 'material/admin/css/theme_change.min.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+  integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'material/admin/css/theme_change.min.css' %}">
 {% endblock %}
 
 {% block title %}{{ title }}{% endblock %}
-
 {% block content %}
-    <div style="align-content: center">
-    <h2>this is faculty dashbord</h2>
-    {% for item in dash_data %}
-        <p><a href="{% url 'admin:Student_app_student_marks_changelist' %}?marks_entered__exact=0&stu_sem={{item.semester.sem}}"> Semester : {{item.semester.sem}}</a></p>
-        <p>Remaining entry is {{ item.semester.sem_remain }}</p>
-        {% for subject in item.subject  %}
-        	<p>Subject name: {{ subject.sub_name }}</p>
-        	<p>remaining entry is  {{ subject.sub_remain }}</p>
-        {% endfor %}
+<div class="container-fluid">
 
-        <br>
-    {% endfor %}
+<div class="accordion" id="accordionPanelsStayOpenExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse"
+        data-bs-target="#panelsStayOpen-collapse{{item.semester.sem}}" aria-expanded="true" aria-controls="panelsStayOpen-collapse{{item.semester.sem}}">
+        Ssmester Wise   :
+        <div class="container-fluid">
+
+
+          <div class="progress" role="progressbar" aria-label="Warning example" style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow="{{item.semester.sem_p}}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated text" style="width: {{ work.Total.remain|percentageinv:work.Total.total|floatformat:2 }}%">{{ work.Total.remain|percentageinv:work.Total.total|floatformat:2 }}%</div>
+          </div>
+      </div>
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapse{{item.semester.sem}}" class="accordion-collapse collapse show">
+
+      <div class="accordion-body">
+
+        {% for item in work.marks_work %}
+        <div class="accordion" id="sem{{ item.semester.sem }}">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#panelsStayOpen-collapse{{item.semester.sem}}" aria-expanded="true" aria-controls="panelsStayOpen-collapse{{item.semester.sem}}">
+                Semester : {{item.semester.sem}}
+                <div class="container-fluid">
+
+
+                  <div class="progress" role="progressbar" aria-label="Warning example" style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow="{{item.semester.sem_p}}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated text" style="width: {{ item.semester.sem_remain|percentageinv:item.semester.sem_total|floatformat:2 }}%">{{ item.semester.sem_remain|percentageinv:item.semester.sem_total|floatformat:2 }}%</div>
+                  </div>
+              </div>
+              </button>
+            </h2>
+            <div id="panelsStayOpen-collapse{{item.semester.sem}}" class="accordion-collapse collapse show">
+
+              <div class="accordion-body">
+
+
+                    <div class="card ">
+
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-3">
+                            <h5 class="card-title">Semester : {{item.semester.sem}} </h5>
+                            <p class="card-text"><h2><b>{{ item.semester.sem_remain }}/{{ item.semester.sem_total }}</b></h2></p>
+                            <a href="{% url 'admin:Student_app_student_marks_changelist' %}?marks_entered__exact=0&stu_sem={{item.semester.sem}}" class="btn " style="color: white;">Student Marks </a>
+                          </div>
+                          <div class="col">
+
+                            {% for subject in item.subject  %}
+                            <div class="card">
+                              <div class="card-body">
+
+                                <p>...............:Subject name: {{ subject.sub_name }}</p>
+                                <p>...............:remaining entry is  {{ subject.sub_remain }}</p>
+                                <p>...............:out of entry {{ subject.sub_total }}</p>
+                                <p>...............:per of entry {{ subject.sub_remain|percentageinv:subject.sub_total|floatformat:2 }}</p>
+                              </div>
+                            </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="accordion" id="pass">
+  <div class="accordion-item">
+    <h2 class="accordion-header">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse"
+        data-bs-target="#pass-panelsStayOpen-collapse" aria-expanded="true" aria-controls="pass-panelsStayOpen-collapse">
+        Semester pass record   :
+        <div class="container-fluid">
+
+
+          <div class="progress" role="progressbar" aria-label="Warning example" style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow="{{item.semester.sem_p}}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated text" style="width: {{ pass_work.Total.passed|percentage:pass_work.Total.total|floatformat:2 }}%">{{ pass_work.Total.passed|percentage:pass_work.Total.total|floatformat:2 }}%</div>
+          </div>
+      </div>
+      </button>
+    </h2>
+    <div id="pass-panelsStayOpen-collapse" class="accordion-collapse collapse show">
+
+      <div class="accordion-body">
+
+        {% for item in pass_work.marks %}
+        <div class="accordion" id="pass-sem{{ item.semester.sem }}">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                data-bs-target="#panelsStayOpen-collapse-passed-{{item.semester.sem}}" aria-expanded="true" aria-controls="panelsStayOpen-collapse-passed-{{item.semester.sem}}">
+                Semester : {{item.semester.sem}}
+                <div class="container-fluid">
+
+
+                  <div class="progress" role="progressbar" aria-label="Warning example" style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow="{{item.semester.sem_p}}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated text" style="width: {{ item.semester.sem_passed|percentage:item.semester.sem_total|floatformat:2 }}%">{{ item.semester.sem_passed|percentage:item.semester.sem_total|floatformat:2 }}%</div>
+                  </div>
+              </div>
+              </button>
+            </h2>
+            <div id="panelsStayOpen-collapse-passed-{{item.semester.sem}}" class="accordion-collapse collapse show">
+
+              <div class="accordion-body">
+
+
+                    <div class="card ">
+
+                      <div class="card-body">
+                        <div class="row">
+                          <div class="col-3">
+                            <h5 class="card-title">Semester : {{item.semester.sem}} </h5>
+                            <p class="card-text"><h2><b>{{ item.semester.sem_passed }}/{{ item.semester.sem_total }}</b></h2></p>
+                          </div>
+                          <div class="col">
+
+                            {% for subject in item.subject  %}
+                            <div class="card">
+                              <div class="card-body">
+
+                                <p>...............:Subject name: {{ subject.sub_name }}</p>
+                                <p>...............:Students passed {{ subject.sub_passed }}</p>
+                                <p>...............:Total Students {{ subject.sub_total }}</p>
+                                <p>...............:pass rate {{ subject.sub_passed|percentage:subject.sub_total|floatformat:2 }}</p>
+                              </div>
+                            </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+
+
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
 {% endblock %}

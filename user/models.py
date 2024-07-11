@@ -12,7 +12,7 @@ class User(AbstractUser):
     role = models.CharField(max_length=50,choices=Role.choices)
     profile_picture = models.ImageField(upload_to='user/profile_pic/',blank=True,null=True)
     def save(self,*args,**kwargs):
-        self.role = self.base_role
+        if not self.role:self.role = self.base_role
         if 'pbkdf2_sha' not in self.password:
             self.set_password(self.password)
         else: self.password = self.password

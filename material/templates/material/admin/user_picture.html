@@ -14,6 +14,6 @@
     {% endif %}
     <div class="card-title">
         <strong>{% firstof user.get_short_name user.username|default_if_none:'' %}</strong><br>
-        <small>{{ user.email|default_if_none:'' }}</small>
+        <small><a style="all: unset " href="mailto:{{ user.email|default_if_none:'' }}">{{ user.email|default_if_none:'' }}</a></small>
     </div>
 {% endblock %}
