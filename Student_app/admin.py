@@ -147,7 +147,7 @@ class Student_MarksAdmin(admin.ModelAdmin):
     # fields = ['id','student','subject','Assigned_Sub_Faculty','stu_sub_code','sub_name',
     #           'stu_branch_code','stu_name','stu_sem','session','stu_term','stu_theory_ESE',
     #           'stu_theory_PA', 'stu_practical_ESE','stu_practical_PA']
-    list_display = ('id','marks_entered', 'stu_enroll', 'sub_name', 'stu_sub_code', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem','is_passed')
+    list_display = ('id','marks_entered','is_passed', 'stu_enroll', 'sub_name', 'stu_sub_code', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem',)
     list_filter = ('marks_entered','sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','session','year')
     actions = ['generate_excel','process_xlsx']
 
@@ -204,6 +204,13 @@ class Student_MarksAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def generate_excel(modeladmin, request, queryset):
+
+    #     for record in queryset:
+    #         marks = sum([record.stu_theory_ESE , record.stu_theory_PA , record.stu_practical_PA , record.stu_practical_ESE])
+    #         if marks < 80:record.is_passed = False
+    #         record.save()
+    #
+
         data = list(queryset.values())
         df = pd.DataFrame(data)
         columns_to_exclude = ['student_id','subject_id','Assigned_Sub_Faculty_id','stu_branch_code']

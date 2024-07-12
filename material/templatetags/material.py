@@ -22,6 +22,9 @@ CHECK_CHECKBOX_TYPE = 'type="checkbox"'
 DOT = '.'
 
 @register.filter
+def sub(value, arg):
+    return value - arg
+@register.filter
 def percentage(remain, total):
     try:
         return (remain / total) * 100

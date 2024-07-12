@@ -47,12 +47,25 @@
                 </div>
             </li>
             {% endfor %}
+        <li class="scrollspy">
+            <div class="collapsible-header">
+                <i class="material-icons" aria-hidden="true">settings</i>
+                Dashbord
+            </div>
+            <div class="collapsible-body">
+                <div {% url 'admin:dashbord' as admin_dashboard_url %}
+     {% if admin_dashboard_url in request.path %}class="active"{% endif %}>
+                    <a href="{% url 'admin:dashbord' %}">
+                        View Dashbord
+                    </a>
+                </div>
+        </li>
         </ul>
     {% else %}
     <div class="app">
         <div class="card">
             <div class="card-content">
-                <p>{% trans "You don't have permission to view or edit anything." %}</>
+                <p>{% trans "You don't have permission to view or edit anything." %}</p>
             </div>
         </div>
     </div>
