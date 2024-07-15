@@ -23,7 +23,9 @@ class Student(models.Model):
     stu_mobile_num = models.CharField(max_length=10)
     stu_parents_mobile_num = models.CharField(max_length=10)
     stu_address = models.CharField(max_length=300)
-    is_passed = models.BooleanField(default=True)
+    is_passed = models.BooleanField(default=True,verbose_name= 'Passed')
+    is_passout = models.BooleanField(default=False,verbose_name='Passout')
+
     def __str__(self):
         return str(self.stu_enroll)
 
@@ -36,14 +38,15 @@ class Student_Marks(models.Model):
 
     id = models.CharField(max_length=25,primary_key=True,unique=True,default='hello')
     student = models.ForeignKey('Student',on_delete=models.DO_NOTHING,default='0')
-    stu_enroll = models.CharField(max_length=12,default='enrollmentno',verbose_name= 'Student Enrollment Number')
-    stu_sem = models.IntegerField(default=5)
+    stu_enroll = models.CharField(max_length=12,default='enrollmentno',verbose_name= 'Enrollment')
+    stu_sem = models.IntegerField(default=5,verbose_name= 'Semester')
     stu_term = models.CharField(max_length=5,default='tern')
     stu_name = models.CharField(max_length=50,default='name')
     subject = models.ForeignKey(Sub_Syllabus,on_delete=models.DO_NOTHING)
+    exam_type = models.CharField(max_length=14,default='S2023-Regular',verbose_name="Type")
     sub_name = models.CharField(max_length=50,default='thisissubjectname')
     Assigned_Sub_Faculty = models.ForeignKey(Faculty_Records,
-                                             on_delete=models.SET_NULL,null=True, default=11)
+                                             on_delete=models.SET_NULL,null=True, default=11,verbose_name='Faculty')
     stu_branch_code = models.CharField(max_length=2, default='16')
     stu_sub_code = models.IntegerField(default=0)
     session = models.CharField(max_length=50,
@@ -54,7 +57,13 @@ class Student_Marks(models.Model):
     stu_practical_ESE = models.IntegerField(default=0)
     stu_practical_PA= models.IntegerField(default=0)
     marks_entered = models.BooleanField(default=False)
-    is_passed = models.BooleanField(default=True)
+    is_passed = models.BooleanField(default=True, verbose_name='Passed')
+    is_remedial = models.BooleanField(default=False)
+
+    def total_marks(self):
+        return self.stu_theory_PA + self.stu_theory_ESE + self.stu_practical_PA + self.stu_practical_ESE
+
+    total_marks.short_description = 'Total Marks'
 
     def clean(self):
         if self.student.stu_branch_code != self.subject.sub_branch_code or self.student.stu_sem != self.subject.sub_sem:
@@ -109,6 +118,10 @@ def add_prefix_to_id(sender, instance, *args, **kwargs):
     new_id= str(instance.session)[0]+str(instance.year)+str(instance.student.stu_enroll)+str(instance.subject.sub_code)
     if len(instance.id) <15:
         instance.id = new_id
+        if instance.is_remedial:
+            instance.exam_type = new_id[:5]+'-Remedial'
+        else:
+            instance.exam_type = new_id[:5]+'-Regular'
         instance.stu_sem = instance.subject.sub_sem
         instance.sub_name = instance.subject.sub_name
         instance.stu_term = instance.subject.sub_academic_term

@@ -40,6 +40,11 @@ class Sub_Syllabus(models.Model):
     sub_academic_term = models.CharField(max_length=5)
     sub_pdf = models.FileField(upload_to='home/pdfs/syllabus')
 
+    def total_marks(self):
+        return self.sub_theory_PA+self.sub_theory_ESE+self.sub_prctical_PA+self.sub_prctical_ESE
+
+    total_marks.short_description = 'Total Marks'
+
     def __str__(self):
         return self.sub_name
 

@@ -8,7 +8,7 @@ from faculty.models import Faculty_Records
 @admin.register(Sub_Syllabus)
 class Sub_SyllabusAdmin(admin.ModelAdmin):
     model = Sub_Syllabus
-    list_display = ('sub_code','sub_name','sub_sem','sub_branch_code','sub_credit','sub_academic_term','Assigned_Sub_Faculty')
+    list_display = ('sub_code','sub_name','sub_sem','sub_branch_code','sub_credit','total_marks','sub_academic_term','Assigned_Sub_Faculty')
     list_filter = ('sub_branch_code','sub_sem')
 
     def get_queryset(self, request):

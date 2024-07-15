@@ -117,13 +117,13 @@ class FacultyDashbordView(TemplateView):
             semester_pass_remain += sub_passed
             semester_pass_total += sub_total
 
-            subject_marks_total = subject.sub_theory_PA+subject.sub_theory_ESE+subject.sub_prctical_PA+subject.sub_prctical_ESE
+            subject_marks_total = subject.total_marks()
             subject_marks_average = 0
             subject_marks_max = 0
             subject_marks_min = float('inf')
             if sub_total > 0:
                 for record in sub_pass:
-                    marks = record.stu_theory_PA + record.stu_theory_ESE + record.stu_practical_PA + record.stu_practical_ESE
+                    marks = record.total_marks()
                     subject_marks_average += marks
                     subject_marks_max = max(subject_marks_max, marks)
                     subject_marks_min = min(subject_marks_min, marks)
