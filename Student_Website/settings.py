@@ -35,8 +35,19 @@ EMAIL_HOST_USER = EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
 EMAIL_PORT = EMAIL_PORT
 
+# Metarial settings
+SHOW_THEMES = True
+SHOW_COUNTS = 1212
+
+# Captcha settings
+CAPTCHA_LENGTH = 6
+CAPTCHA_FONT_SIZE = 65
+
+
 # Application definition
 # X_FRAME_OPTIONS = 'SAMEORIGIN' #only for jet
+
+
 
 INSTALLED_APPS = [
     'material',

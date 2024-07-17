@@ -1,15 +1,11 @@
-from django.contrib import admin
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.core.files.base import ContentFile
 import io
 from .models import *
-from django.db import transaction
-from django.db.utils import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
 import pandas as pd
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-from django.shortcuts import render,redirect
+from django.shortcuts import redirect
 from datetime import datetime
 
 
@@ -17,6 +13,7 @@ from datetime import datetime
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
+    icon_name = 'person'
     model = Student
     fieldsets = (
         ("Student's personal details ", {
@@ -25,13 +22,13 @@ class StudentAdmin(admin.ModelAdmin):
         }),
         ("Student's Academic Details  ", {
             'classes': ('collapse',),
-            'fields': (('stu_enroll','stu_sem', ), ('stu_branch', 'stu_branch_code'),('is_passed', 'is_passout')),
+            'fields': (('stu_enroll' , 'stu_sem', ), ('stu_branch' , 'stu_branch_code'),('is_passed', 'is_passout')),
         }),
     )
     # fields = ['stu_name','stu_enroll','stu_sem','stu_DOB','stu_branch','stu_branch_code','stu_mobile_num','stu_parents_mobile_num','stu_address','is_passed']
     list_display = ('stu_enroll','stu_name','stu_branch','stu_sem','is_passed','is_passout')
     list_filter = ('stu_sem','stu_branch')
-    actions = ['next_term','make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
+    actions = [' _term','make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -56,7 +53,13 @@ class StudentAdmin(admin.ModelAdmin):
         return super(StudentAdmin,self).changelist_view(request,extra_context)
 
     def next_term(self,request,queryset):
-        pass
+        for student in queryset:
+            if student.is_passed and not student.is_passout:
+                student.stu_sem += 1
+                if student.stu_sem > 6:
+                    student.is_passout = True
+                student.save()
+
     def make_marks_entry_for_Winter_Session(self,request,queryset,):
         return self.make_marks_entry_for_Summer_Session(request,queryset,Sub_Syllabus.Session.WINTER)
     def make_marks_entry_for_Summer_Session(self,request,queryset,SESSION = Sub_Syllabus.Session.SUMMER):
@@ -85,7 +88,8 @@ class StudentAdmin(admin.ModelAdmin):
                         student=student,
                         subject=subjects,
                         session=SESSION,
-                        is_remedial = True
+                        is_remedial = True,
+                        year = datetime.now().year
                     )
                         stu.save()
                     except Exception as e:
@@ -124,8 +128,8 @@ class StudentAdmin(admin.ModelAdmin):
         with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
             df.to_excel(writer, index=False)
         excel_buffer.seek(0)
-        target_obj = upload_from_xlsx.objects.create(
-            model_name=upload_from_xlsx.name_model.STUDENT
+        target_obj = Upload_from_xlsx.objects.create(
+            model_name=Upload_from_xlsx.name_model.STUDENT
         )
         target_obj.xlsx_file.save(f'generated_excel.xlsx', ContentFile(excel_buffer.read()), save=True)
 
@@ -153,9 +157,9 @@ class Student_MarksAdmin(admin.ModelAdmin):
     # fields = ['id','student','subject','Assigned_Sub_Faculty','stu_sub_code','sub_name',
     #           'stu_branch_code','stu_name','stu_sem','session','stu_term','stu_theory_ESE',
     #           'stu_theory_PA', 'stu_practical_ESE','stu_practical_PA']
-    list_display = ('stu_enroll','exam_type','marks_entered','is_passed', 'total_marks', 'subject', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem',)
-    list_filter = ('marks_entered','sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','session','year')
-    actions = ['generate_excel','process_xlsx']
+    list_display = ('stu_enroll','stu_term','exam_type','marks_entered','is_passed', 'total_marks',
+                    'subject', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem',)
+    list_filter = ('marks_entered','sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','stu_term')
 
     def changelist_view(self, request, extra_context=None):
         if 'action' in request.POST and request.POST['action'] == 'generate_excel':
@@ -210,42 +214,34 @@ class Student_MarksAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def generate_excel(modeladmin, request, queryset):
+            # marks = sum([record.stu_theory_ESE , record.stu_theory_PA , record.stu_practical_PA , record.stu_practical_ESE])
+            # if marks < 80:record.is_passed = False
+            # record.save()
 
-        for instance in queryset:
-            if instance.is_remedial:
-                instance.exam_type = instance.id[:5] + '-Remedial'
-            else:
-                instance.exam_type = instance.id[:5] + '-Regular'
-            instance.save()
-    #         marks = sum([record.stu_theory_ESE , record.stu_theory_PA , record.stu_practical_PA , record.stu_practical_ESE])
-    #         if marks < 80:record.is_passed = False
-    #         record.save()
-    #
+        data = list(queryset.values())
+        df = pd.DataFrame(data)
+        columns_to_exclude = ['student_id','subject_id','Assigned_Sub_Faculty_id','stu_branch_code']
+        df = df.drop(columns=columns_to_exclude, errors='ignore')
 
-    #     data = list(queryset.values())
-    #     df = pd.DataFrame(data)
-    #     columns_to_exclude = ['student_id','subject_id','Assigned_Sub_Faculty_id','stu_branch_code']
-    #     df = df.drop(columns=columns_to_exclude, errors='ignore')
-    #
-    #     excel_buffer = io.BytesIO()
-    #     with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
-    #         df.to_excel(writer, index=False)
-    #     excel_buffer.seek(0)
-    #     target_obj = upload_from_xlsx.objects.create(
-    #         model_name=upload_from_xlsx.name_model.STUDENTMARKS
-    #         # Add other fields as needed...
-    #     )
-    #
-    #     # Save the Excel file to the target model's FileField
-    #     target_obj.xlsx_file.save(f'generated_excel.xlsx', ContentFile(excel_buffer.read()), save=True)
-    #
-    #     modeladmin.message_user(request,
-    #                             'Now your xlsx record is created download xlsx file from this model edit and re upload in this then select create record action ')
-    #     return redirect('/admin/Student_app/upload_from_xlsx/')
-    #
+        excel_buffer = io.BytesIO()
+        with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False)
+        excel_buffer.seek(0)
+        target_obj = Upload_from_xlsx.objects.create(
+            model_name=Upload_from_xlsx.name_model.STUDENTMARKS
+            # Add other fields as needed...
+        )
+
+        # Save the Excel file to the target model's FileField
+        target_obj.xlsx_file.save(f'generated_excel.xlsx', ContentFile(excel_buffer.read()), save=True)
+
+        modeladmin.message_user(request,
+                                'Now your xlsx record is created download xlsx file from this model edit and re upload in this then select create record action ')
+        return redirect('/admin/Student_app/upload_from_xlsx/')
+
     generate_excel.short_description = "Generate Excel"
 
-@admin.register(upload_from_xlsx)
+@admin.register(Upload_from_xlsx)
 class upload_from_xlsxAdmin(admin.ModelAdmin):
     actions = ['process_xlsx']
     def get_readonly_fields(self, request, obj=None):
@@ -255,15 +251,16 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
         return False
 
     def get_queryset(self, request):
-        if not request.user.is_superuser:
-            return upload_from_xlsx.objects.filter(model_name=upload_from_xlsx.name_model.STUDENTMARKS)
         query = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return query.filter(model_name=Upload_from_xlsx.name_model.STUDENTMARKS)
+        return query
 
     def process_xlsx(modeladmin, request, queryset):
         for quir in queryset:
             xlsx_path = quir.xlsx_file.path
             df = pd.read_excel(xlsx_path)
-            if quir.model_name == upload_from_xlsx.name_model.STUDENT and request.user.is_superuser:
+            if quir.model_name == Upload_from_xlsx.name_model.STUDENT and request.user.is_superuser:
                 if request.user.is_superuser:
                     for index, row in df.iterrows():
                         try:
@@ -283,7 +280,7 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                             return redirect('/admin/Student_app/upload_from_xlsx/')
                         except Exception:
                             pass
-            elif quir.model_name == upload_from_xlsx.name_model.STUDENTMARKS:
+            elif quir.model_name == Upload_from_xlsx.name_model.STUDENTMARKS:
                 for index, row in df.iterrows():
                     try:
                         stu = Student_Marks.objects.get(id=row['id'])

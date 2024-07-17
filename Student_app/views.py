@@ -67,7 +67,7 @@ def signup(request):
                 Email = EmailMessage(
                     subject,
                     message_body,
-                    EMAIL_HOST_USER,
+                    "Student Management Website",
                     [email]
                 )
                 Email.fail_silently = True
@@ -190,7 +190,7 @@ def forgot(request):
                 Email = EmailMessage(
                     subject,
                     message_body,
-                    EMAIL_HOST_USER,
+                    "Student Management Website",
                     [email]
                 )
                 Email.fail_silently = True

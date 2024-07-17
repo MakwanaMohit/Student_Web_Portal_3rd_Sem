@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.conf import settings as django_settings
 try:
     from django.contrib.staticfiles.templatetags.staticfiles import static as staticfiles  # Django2 support
 except ImportError:
@@ -11,11 +12,11 @@ except AttributeError:
 
 
 def _get_setting(setting_name):
-    return settings.get(setting_name) and settings[setting_name]
+    return getattr(django_settings, setting_name, None)
 
 
 def _get_setting_static(setting_name):
-    return settings.get(setting_name) and staticfiles(settings[setting_name])
+    return _get_setting(setting_name) and staticfiles(_get_setting(setting_name))
 
 
 MATERIAL_ADMIN_SITE = {

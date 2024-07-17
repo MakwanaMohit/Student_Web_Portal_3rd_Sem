@@ -1,5 +1,5 @@
 from django.contrib.admin.sites import AdminSite
-from django.shortcuts import redirect
+from django.shortcuts import redirect ,HttpResponse
 from django.urls import NoReverseMatch, reverse, path
 from django.utils.functional import LazyObject
 from django.utils.module_loading import import_string
@@ -47,7 +47,7 @@ class MaterialAdminSite(AdminSite):
         self.profile_bg = self.profile_bg or MATERIAL_ADMIN_SITE['PROFILE_BG']
         self.login_logo = self.login_logo or MATERIAL_ADMIN_SITE['LOGIN_LOGO']
         self.logout_bg = self.logout_bg or MATERIAL_ADMIN_SITE['LOGOUT_BG']
-        self.show_themes = True
+        self.show_themes = self.show_themes or MATERIAL_ADMIN_SITE['SHOW_THEMES']
         self.show_counts = self.show_counts or MATERIAL_ADMIN_SITE['SHOW_COUNTS']
 
     def get_urls(self):
@@ -69,17 +69,15 @@ class MaterialAdminSite(AdminSite):
         defaults = {
             'extra_context': {**self.each_context(request), **(extra_context or {})},
         }
-        try:
-            if request.user.role == User.Role.FACULTY:
-                if self.faculty_dashbord_template is not None:
-                    defaults['template_name'] = self.faculty_dashbord_template
-                return FacultyDashbordView.as_view(**defaults)(request)
+        if request.user.role == User.Role.FACULTY:
+            if self.faculty_dashbord_template is not None:
+                defaults['template_name'] = self.faculty_dashbord_template
+            return FacultyDashbordView.as_view(**defaults)(request)
 
-            if self.admin_dashbord_template is not None:
-                defaults['template_name'] = self.admin_dashbord_template
-            request.current_app = self.name
-            return AdminDashbordView.as_view(**defaults)(request)
-        except : return redirect(reverse('admin:index'))
+        if self.admin_dashbord_template is not None:
+            defaults['template_name'] = self.admin_dashbord_template
+        request.current_app = self.name
+        return AdminDashbordView.as_view(**defaults)(request)
     def each_context(self, request):
         """Add favicon url to each context"""
         context = super().each_context(request)

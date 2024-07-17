@@ -1,7 +1,7 @@
 import sqlite3
 
 # Connect to the source database (database with data)
-source_conn = sqlite3.connect(r'D:\study\5th sem  it\Internship II\Student_Web_Portal_3rd_Sem\db - Copy.sqlite3')
+source_conn = sqlite3.connect(r'D:\study\5th sem  it\Internship II\Student_Web_Portal_3rd_Sem\maindb.sqlite3')
 source_cursor = source_conn.cursor()
 
 # Connect to the destination database (empty database)
@@ -29,11 +29,15 @@ def copy_table_data(table_name):
 
 # Copy data for main_gtuexam table
 # copy_table_data('main_gtuexam')
-
-# Copy data for main_sub_syllabus table
 # copy_table_data('main_sub_syllabus')
 # copy_table_data('Student_app_student')
-copy_table_data('faculty_faculty_records')
+# copy_table_data('faculty_faculty_records')
+# copy_table_data('Student_app_student_marks')
+# copy_table_data('user_user')
+# copy_table_data('user_user_groups')
+# copy_table_data('user_user_permissions')
+copy_table_data('auth_group')
+copy_table_data('auth_group_permissions')
 
 # Close the connections
 source_conn.close()
