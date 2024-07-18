@@ -33,12 +33,24 @@
 
 
 <div class="container-fluid m-2">
+<h4>select term</h4>
+<form method="post" id="termForm">
+    {% csrf_token %}
+    <select name="term" id="term" aria-label="Default select example" onchange="document.getElementById('termForm').submit()">
+        <option selected value="{{ term }}">{{ term }}</option>
+        {% for t in terms%}
+            <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+    </select>
+    <input type="submit" style="display:none;">
+</form>
 
+<br>
   <div class="accordion " id="adminpanelmarks">
-    <div class="accordion-item bg-secondary">
+    <div class="accordion-item ">
       <h2 class="accordion-header">
-        <button class="accordion-button bg-secondary collapsed" type="button" data-bs-toggle="collapse"
-          data-bs-target="#collapse-pass" aria-expanded="false" aria-controls="collapse-pass">
+        <button class="accordion-button  collapsed" type="button" data-bs-toggle="collapse"
+          data-bs-target="#collapse-marks" aria-expanded="false" aria-controls="collapse-marks">
           Ssmester Wise :
           <div class="container-fluid">
             <div class="progress" role="progressbar" aria-label="Warning example"
@@ -51,13 +63,14 @@
           </div>
         </button>
       </h2>
-      <div id="collapse-pass" class="accordion-collapse collapse">
+      <div id="collapse-marks" class="accordion-collapse collapse" data-bs-parent="#adminpanelmarks">
         <div class="accordion-body">
+            <div class="accordion" id="sem-marks">
           {% for item in work.marks_work %}
-          <div class="accordion bg-secondary" id="sem{{ item.semester.sem }}">
-            <div class="accordion-item  bg-secondary">
-              <h2 class="accordion-header bg-secondary">
-                <button class="accordion-button bg-secondary collapsed" type="button" data-bs-toggle="collapse"
+
+            <div class="accordion-item  ">
+              <h2 class="accordion-header ">
+                <button class="accordion-button  collapsed" type="button" data-bs-toggle="collapse"
                   data-bs-target="#collapse-pass-{{item.semester.sem}}" aria-expanded="false"
                   aria-controls="collapse-pass-{{item.semester.sem}}">
                   Semester : {{item.semester.sem}}
@@ -72,10 +85,10 @@
                   </div>
                 </button>
               </h2>
-              <div id="collapse-pass-{{item.semester.sem}}" class="accordion-collapse collapse">
+              <div id="collapse-pass-{{item.semester.sem}}" class="accordion-collapse collapse" data-bs-parent="#sem-marks">
                 <div class="accordion-body">
                   <div class="card">
-                    <div class="card-body bg-secondary" style="color:black;">
+                    <div class="card-body " style="color:black;">
                       <div class="row">
                         <div class="col-3">
                           <h5 class="card-title">Semester : {{item.semester.sem}} </h5>
@@ -87,7 +100,7 @@
                         </div>
                         <div class="col">
                           {% for subject in item.subject %}
-                          <div class="card bg-secondary">
+                          <div class="card ">
                             <div class="card-body">
                               <p style="color:black; ">Subject name: {{ subject.sub_name }}</p>
                               <p style="color:black;">Remaining entry is {{ subject.sub_remain }}</p>
@@ -105,22 +118,21 @@
                 </div>
               </div>
             </div>
-          </div>
+
           {% endfor %}
+            </div>
         </div>
       </div>
     </div>
-
-    <div class="accordion" id="passedstudent">
-      <div class="accordion-item  bg-secondary">
+      {% if pass_work.Total.marks_entered  %}<div class="accordion-item">
         <h2 class="accordion-header">
-          <button class="accordion-button bg-secondary collapsed" type="button" data-bs-toggle="collapse"
-            data-bs-target="#collapse{{item.semester.sem}}" aria-expanded="false"
-            aria-controls="collapse{{item.semester.sem}}">
+          <button class="accordion-button  collapsed" type="button" data-bs-toggle="collapse"
+            data-bs-target="#collapse-pass" aria-expanded="false"
+            aria-controls="collapse-pass">
             Semester pass record :
             <div class="container-fluid">
               <div class="progress" role="progressbar" aria-label="Warning example"
-                style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow="{{item.semester.sem_p}}"
+                style="height: 12px; background-color: rgb(90, 90, 90);" aria-valuenow=""
                 aria-valuemin="0" aria-valuemax="100">
                 <div class="progress-bar progress-bar-striped progress-bar-animated text"
                   style="width: {{ pass_work.Total.passed|percentage:pass_work.Total.total|floatformat:2 }}%">
@@ -129,13 +141,14 @@
             </div>
           </button>
         </h2>
-        <div id="collapse{{item.semester.sem}}" class="accordion-collapse collapse">
+        <div id="collapse-pass" class="accordion-collapse collapse" data-bs-parent="#adminpanelmarks">
           <div class="accordion-body">
+
+            <div class="accordion" id="sem-pass">
             {% for item in pass_work.marks %}
-            <div class="accordion" id="passsem{{ item.semester.sem }}">
-              <div class="accordion-item  bg-secondary">
+              {% if item.semester.marks_entered%}<div class="accordion-item  ">
                 <h2 class="accordion-header">
-                  <button class="accordion-button bg-secondary collapsed" type="button" data-bs-toggle="collapse"
+                  <button class="accordion-button  collapsed" type="button" data-bs-toggle="collapse"
                     data-bs-target="#collapse{{item.semester.sem}}" aria-expanded="false"
                     aria-controls="collapse{{item.semester.sem}}">
                     Semester : {{item.semester.sem}}
@@ -150,7 +163,7 @@
                     </div>
                   </button>
                 </h2>
-                <div id="collapse{{item.semester.sem}}" class="accordion-collapse collapse">
+                <div id="collapse{{item.semester.sem}}" class="accordion-collapse collapse" data-bs-parent="#sem-pass">
                   <div class="accordion-body">
                     <div class="row">
                       <div class="col-3">
@@ -162,7 +175,7 @@
                       </div>
                       <div class="col">
                         {% for subject in item.subject %}
-                        <div class="card bg-secondary">
+                        {% if subject.marks_entered%}<div class="card ">
                           <div class="card-body">
                             <div class="row">
                               <div class="col">
@@ -180,19 +193,23 @@
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </div>{% endif %}
                         {% endfor %}
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </div>{% endif %}
+
             {% endfor %}
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div>{% else %}
+          <div class="accordion-item">
+          <h6 class="p-2">Student analytics not availabe because you don't enter any marks yet</h6>
+          </div>
+      {% endif %}
   </div>
 
 </div>

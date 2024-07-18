@@ -56,16 +56,37 @@ class ThemesView(TemplateView):
 class FacultyDashbordView(TemplateView):
     title = _('Faculty Dashbord')
 
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         fac = Faculty_Records.objects.get(user=self.request.user)
-        rec = get_faculty_subject_analytics(fac)
-        if rec:context.update(rec)
+        terms = list(Student_Marks.objects.filter(Assigned_Sub_Faculty = fac).values_list('stu_term',flat=True).distinct())
+        terms.sort(key=lambda x:x[1:]+x[0],reverse=True)
         context.update({
             'title': self.title,
+            'terms':terms,
+            'fac':fac,
             **(self.extra_context or {})
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        term = request.POST.get('term',context['terms'][0])
+        context['term'] = term
+        fac = context['fac']
+        rec = get_faculty_subject_analytics(fac,term)
+        if rec:context.update(rec)
+        return self.render_to_response(context)
+    def get(self, request, *args, **kwargs):
+        # print(term)
+        context = self.get_context_data(**kwargs)
+        term = context['terms'][0]
+        context['term'] = term
+        fac = context['fac']
+        rec = get_faculty_subject_analytics(fac,term)
+        if rec:context.update(rec)
+        return self.render_to_response(context)
 
 
 class AdminDashbordView(TemplateView):
@@ -95,10 +116,10 @@ class AdminDashbordView(TemplateView):
         context['subject_analytics'] = get_admin_analytics(term)
         return self.render_to_response(context)
 
-def get_faculty_subject_analytics(fac):
-
-    subjects = Sub_Syllabus.objects.filter(Assigned_Sub_Faculty=fac).order_by('-sub_sem')
-
+def get_faculty_subject_analytics(fac,term):
+    records = Student_Marks.objects.filter(Assigned_Sub_Faculty=fac,stu_term=term).order_by('-stu_sem')
+    subjects = Sub_Syllabus.objects.filter(sub_id__in=records.values_list('subject',flat=True).distinct())
+    print(subjects)
     marks_work = ()
     row = {'semester': None, 'subject': tuple()}
     semester = subjects[0].sub_sem
@@ -106,9 +127,8 @@ def get_faculty_subject_analytics(fac):
     semester_total = 0
     Total = 0
     Remain = 0
-    records = Student_Marks.objects.filter(Assigned_Sub_Faculty=fac)
-    Faculty = records[0].Assigned_Sub_Faculty
     if len(records) < 1:return False
+    Faculty = records[0].Assigned_Sub_Faculty
     pass_work = ()
     pass_row = {'semester': None, 'subject': tuple()}
     pass_total = 0
@@ -123,7 +143,7 @@ def get_faculty_subject_analytics(fac):
             row = {'semester': None, 'subject': tuple()}
 
             pass_row['semester'] = {'sem': semester, 'sem_passed': semester_pass_remain,
-                                    'sem_total': semester_pass_total}
+                                    'sem_total': semester_pass_total,'marks_entered':semester_pass_total>0}
             pass_work += (pass_row,)
             pass_row = {'semester': None, 'subject': tuple()}
 
@@ -139,7 +159,7 @@ def get_faculty_subject_analytics(fac):
             semester_pass_total = 0
 
         (total, remain, sub_total, sub_passed, subject_marks_total, subject_marks_average, subject_marks_max,
-         subject_marks_min,marks_entered) = get_subject_analytics(subject,'W2024')
+         subject_marks_min,marks_entered) = get_subject_analytics(subject,term)
 
         semester_remain += remain
         semester_total += total
@@ -147,11 +167,18 @@ def get_faculty_subject_analytics(fac):
         semester_pass_total += sub_total
 
         row['subject'] += ({'sub_name': subject.sub_name, 'sub_remain': remain, 'sub_total': total},)
-        pass_row['subject'] += ({'sub_name': subject.sub_name, 'sub_passed': sub_passed,
-                                 'sub_total': sub_total, 'sub_marks_total': subject_marks_total,
-                                 'sub_marks_max': subject_marks_max.total_marks(), 'sub_marks_min': subject_marks_min.total_marks(),
-                                 'sub_max': subject_marks_max,'sub_min': subject_marks_min,
-                                 'sub_marks_average': subject_marks_average},)
+        if marks_entered:
+            pass_row['subject'] += ({'sub_name': subject.sub_name, 'sub_passed': sub_passed,
+                                     'sub_total': sub_total, 'sub_marks_total': subject_marks_total,
+                                     'sub_marks_max': subject_marks_max.total_marks(), 'sub_marks_min': subject_marks_min.total_marks(),
+                                     'sub_max': subject_marks_max,'sub_min': subject_marks_min,
+                                     'sub_marks_average': subject_marks_average,'marks_entered':True},)
+        else:
+            pass_row['subject'] += ({'sub_name': subject.sub_name, 'sub_passed': sub_passed,
+                                     'sub_total': sub_total, 'sub_marks_total': subject_marks_total,
+                                     'sub_marks_max': subject_marks_max, 'sub_marks_min': subject_marks_min,
+                                     'sub_max': subject_marks_max,'sub_min': subject_marks_min,
+                                     'sub_marks_average': subject_marks_average,'marks_entered':False},)
 
     row["semester"] = {'sem': semester, 'sem_remain': semester_remain, 'sem_total': semester_total}
     marks_work += (row,)
@@ -159,7 +186,7 @@ def get_faculty_subject_analytics(fac):
     Remain += semester_remain
 
     pass_row["semester"] = {'sem': semester, 'sem_passed': semester_pass_remain,
-                            'sem_total': semester_pass_total}
+                            'sem_total': semester_pass_total,'marks_entered':semester_pass_total>0}
     pass_work += (pass_row,)
     pass_total += semester_pass_total
     pass_remain += semester_pass_remain
@@ -167,7 +194,7 @@ def get_faculty_subject_analytics(fac):
     return {
         'Faculty':Faculty,
         'work': {'Total': {'total': Total, 'remain': Remain}, 'marks_work': marks_work},
-        'pass_work': {'Total': {'total': pass_total, 'passed': pass_remain}, 'marks': pass_work},
+        'pass_work': {'Total': {'total': pass_total, 'passed': pass_remain,'marks_entered':pass_total>0}, 'marks': pass_work},
     }
 
 
