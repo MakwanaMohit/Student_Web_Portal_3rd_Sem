@@ -1,8 +1,50 @@
 {% extends 'Student_app/base.html' %}
 {% block body %}
-
+    <section class="section-1 center-align">
+    	<section class="p-5 hello">
+  <div class="container-fluid h-custom">
+    <div class="row d-flex h-50">
+    <div class="card card-login">
+    <div class="row">
+            <div class="col">
+                <h5 class="fc-header-title" id="loginLabel">Select Session</h5>
+                <form action="{% url 'student result' %}" method="post" id="session-form">{% csrf_token %}
+                <div class="form-outline mb-4">
+                    <select class="form-control" name="session" id="session" aria-label="Default select example" onchange="document.getElementById('session-form').submit()">
+                        <option selected value="{{ curr_session }}">{{ curr_session }}</option>
+                        {% for sess in session%}
+                            <option value="{{ sess }}">{{ sess }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" style="display:none;">
+                </div>
+                </form>
+              <div class="col">
+                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Select Semester</h5>
+                <form action="{% url 'student result' %}" method="post" id="semester-form">{% csrf_token %}
+                <input name="session" type="hidden" value="{{ curr_session }}">
+                <div class="form-outline mb-4">
+                    <select class="form-control" name="exam-type" id="exam-type" aria-label="Default select example" required onchange="document.getElementById('semester-form').submit()">
+                    <option value="{{ ctype }}">{{ ctype }}</option>
+                        {% for ty in type%}
+                            <option value="{{ ty }}">{{ ty }}</option>
+                        {% endfor %}
+                    </select><br>
+                    <input class="btn" type="submit">
+                </div>
+                </form>
+            </div>
+            </div>
+          </div>
+    </div>
+        </div>
+    </div>
+  </div>
+</section>
+  </section>
+<br>
     {% if sem %}
-     <table class="table table-success table-striped-columns center-align " style="direction: ltr; " width="70%">
+     <table id="result_marks" class="table table-success table-striped-columns center-align " style="direction: ltr; " width="70%">
 
       <tbody><tr><th colspan="4">GUJARAT TECHNOLOGY UNIVERCITY </th></tr>
       <tr><th colspan="4">Ahemdabad,INDIA</th></tr>
@@ -15,9 +57,9 @@
         <td>Statement No.</td>
       </tr>
       <tr>
-        <td>20{{ subject.sub_academic_term }}</td>
-        <td>{{ subject.session }}</td>
-        <td>{{ student.stu_sem }}</td>
+        <td>{{ first_mark.stu_term }}</td>
+        <td>{{ first_mark.session }}</td>
+        <td>{{ first_mark.stu_sem }}</td>
         <td>W221062512</td>
       </tr>
       <tr>
@@ -118,7 +160,8 @@
         {% if pdf %}
         <form action="{% url 'student result' %}"  method="post">
             {% csrf_token %}
-            <input type="hidden" name="sem" id="sem" value="{{ student.stu_sem }}">
+             <input name="session" type="hidden" value="{{ curr_session }}">
+             <input name="exam-type" type="hidden" value="{{ ctype }}">
             <input type="hidden" name="pdf" id="pdf" value="true">
             <div class="button">
                 <button type="submit" class="btn btn-primary btn-block btn-large" >
@@ -127,64 +170,12 @@
         </form>
         {% endif %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        {% else %}
-{% comment %}        <div class="container py-5 login-box">
-        <form action="{% url 'student result' %}"  method="post">
-            {% csrf_token %}
-              <div class="user-box">
-                <input type="text" id="sem" name="sem" minlength="1" maxlength="1" required style="text-align: left">
-                <label for="username">Enter Sem:</label>
-            </div>
-            <div class="button">
-            <button type="submit" class="btn btn-primary btn-block btn-large" >
-               Submit</button>
-            </div>
-        </form>
-
-
-    </div>{% endcomment %}
-  <section class="section-1 center-align">
-    	<section class="p-5 hello">
-  <div class="container-fluid h-custom">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-
-        <div class="col-lg-6 mb-5 mb-lg-0 ">
-          <div class="card card-login">
-            <div class="card-body py-5 px-md-5">
-                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Enter The sem</h5>
-                          <form action="{% url 'student result' %}" method="post" id="login-form">{% csrf_token %}
-                <div class="form-outline mb-4">
-
-                    <select class="form-control" type="text" id="sem" name="sem" placeholder="SEM" minlength="1" maxlength="1" required style="text-align: left">
-                        {% for se in sem_information %}
-                            <option value="{{ se }}">{{ se }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <!-- Submit button -->
-                <button type="submit" class="btn btn-primary btn-block mb-4">
-                  Submit
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-    </div>
-  </div>
-</section>
-  </section>
-
 
     {% endif %}
+
 {% endblock %}
 
-{% block js %}
-	<script>
-    {% if url_name %}document.addEventListener('DOMContentLoaded', function() {
-            var myModal = new bootstrap.Modal(document.getElementById('GetSemModal'));
-            myModal.show();});{% endif %}
-    </script>
-{% endblock %}
+
 
 {% block css %}
 	<style>

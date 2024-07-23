@@ -1,6 +1,9 @@
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.core.files.base import ContentFile
 import io
+
+from django.http import HttpResponse
+
 from .models import *
 import pandas as pd
 from django.core.exceptions import ValidationError
@@ -9,6 +12,63 @@ from django.shortcuts import redirect
 from datetime import datetime
 
 
+
+def enter_seed_marks(queryset):
+    dataset = [
+        [65, 30, 25, 25],  # Sum: 145
+        [70, 30, 25, 25],  # Sum: 150
+        [68, 30, 25, 23],  # Sum: 146
+        [66, 30, 24, 25],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [67, 28, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [66, 30, 25, 24],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [65, 30, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [68, 30, 25, 23],  # Sum: 146
+        [66, 30, 24, 25],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [67, 28, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [66, 30, 25, 24],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [65, 30, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [68, 30, 25, 23],  # Sum: 146
+        [66, 30, 24, 25],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [67, 28, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [66, 30, 25, 24],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [65, 30, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [68, 30, 25, 23],  # Sum: 146
+        [66, 30, 24, 25],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [67, 28, 25, 24],  # Sum: 144
+        [70, 30, 25, 25],  # Sum: 150
+        [66, 30, 25, 24],  # Sum: 145
+        [69, 29, 25, 25],  # Sum: 148
+        [70, 28, 24, 25],
+        [67, 30, 25, 23]
+    ]
+
+    for obj in queryset:
+        te, tp, pe, pp = dataset.pop()
+        sub = obj.subject
+        if sub.sub_theory_PA > 0:
+            obj.stu_theory_PA = tp
+        if sub.sub_theory_ESE > 0:
+            obj.stu_theory_ESE = te
+        if sub.sub_prctical_PA > 0:
+            obj.stu_practical_PA = pp
+        if sub.sub_prctical_ESE > 0:
+            obj.stu_practical_ESE = pe
+        obj.marks_entered = True
+        obj.save()
+    return redirect('/admin/Student_app/upload_from_xlsx/')
 # Register your models here.
 
 @admin.register(Student)
@@ -28,7 +88,7 @@ class StudentAdmin(admin.ModelAdmin):
     # fields = ['stu_name','stu_enroll','stu_sem','stu_DOB','stu_branch','stu_branch_code','stu_mobile_num','stu_parents_mobile_num','stu_address','is_passed']
     list_display = ('stu_enroll','stu_name','stu_branch','stu_sem','is_passed','is_passout')
     list_filter = ('stu_sem','stu_branch')
-    actions = [' _term','make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
+    actions = ['next_term','make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -160,6 +220,7 @@ class Student_MarksAdmin(admin.ModelAdmin):
     list_display = ('stu_enroll','stu_term','exam_type','marks_entered','is_passed', 'total_marks',
                     'subject', 'stu_name', 'Assigned_Sub_Faculty', 'stu_sem',)
     list_filter = ('marks_entered','sub_name','stu_branch_code','stu_sem','Assigned_Sub_Faculty','stu_term')
+    actions = ['generate_excel']
 
     def changelist_view(self, request, extra_context=None):
         if 'action' in request.POST and request.POST['action'] == 'generate_excel':
@@ -214,10 +275,6 @@ class Student_MarksAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def generate_excel(modeladmin, request, queryset):
-            # marks = sum([record.stu_theory_ESE , record.stu_theory_PA , record.stu_practical_PA , record.stu_practical_ESE])
-            # if marks < 80:record.is_passed = False
-            # record.save()
-
         data = list(queryset.values())
         df = pd.DataFrame(data)
         columns_to_exclude = ['student_id','subject_id','Assigned_Sub_Faculty_id','stu_branch_code']
@@ -273,13 +330,15 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                             stu_branch_code = str(int(row['stu_branch_code'])),
                             stu_mobile_num = row['stu_mobile_num'],
                             stu_parents_mobile_num = row['stu_parents_mobile_num'],
-                            stu_address = row['stu_address'])
+                            stu_address = row['stu_address'],
+                            is_passed=row['is_passed'],
+                            is_passout=row['is_passout'],)
+
                             stu.save()
-                        except KeyError:
-                            messages.error(request,'there is error with this excel file please check model name and use only excel file that generate from this site')
+                        except Exception as e:
+                            messages.error(request,f'there is error: {str(e)} with this excel file at line: {index} please check model name and use only excel file that generate from this site')
                             return redirect('/admin/Student_app/upload_from_xlsx/')
-                        except Exception:
-                            pass
+                    messages.success(request,'Successfully Added the students')
             elif quir.model_name == Upload_from_xlsx.name_model.STUDENTMARKS:
                 for index, row in df.iterrows():
                     try:
@@ -291,14 +350,33 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                             stu.stu_practical_ESE = row['stu_practical_ESE']
                             stu.stu_practical_PA = row['stu_practical_PA']
                             stu.save()
-                    except KeyError:
-                        messages.error(request,
-                                       'there is error with this excel file please check model name and use only excel file that generate from this site')
-                        return redirect('/admin/Student_app/upload_from_xlsx/')
                     except ValidationError as val:
-                        messages.error(request,
-                                       str(val))
+                        messages.error(request,f'validtion error at line: {index} error: {str(val)}')
                         return redirect('/admin/Student_app/upload_from_xlsx/')
+                    except Exception as e:
+                        messages.error(request,f'there is error: {str(e)} with this excel file at line: {index} please check model name and use only excel file that generate from this site')
+                        return redirect('/admin/Student_app/upload_from_xlsx/')
+                    messages.success(request,'Successfully Added the students')
 
 
     process_xlsx.short_description = "Upload data from this file"
+
+@admin.register(Publish_Result)
+class Publish_ResultAdmin(admin.ModelAdmin):
+    list_display = ('id','sem','year','session','type','published')
+    actions = ['publish_result','unpublish_result']
+    def has_change_permission(self, request, obj=None):return False
+    def has_add_permission(self, request):return False
+    def has_delete_permission(self, request, obj=None):return False
+
+    def publish_result(self, request, queryset):
+        for quir in queryset:
+            quir.published = True
+            quir.save()
+    publish_result.short_description = "Publish Result"
+
+    def unpublish_result(self, request, queryset):
+        for quir in queryset:
+            quir.published = False
+            quir.save()
+    unpublish_result.short_description = "UnPublish Result"

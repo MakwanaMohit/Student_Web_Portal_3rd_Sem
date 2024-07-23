@@ -77,7 +77,7 @@
                       aria-valuemin="0" aria-valuemax="100">
                       <div class="progress-bar progress-bar-striped progress-bar-animated text"
                         style="width: {{ subject.remain|percentageinv:subject.total|floatformat:2 }}%">
-                        {{ subject.remain|percentageinv:subject.total|floatformat:2 }}%</div>
+                          Marks enter record: {{ subject.remain|percentageinv:subject.total|floatformat:2 }}%</div>
                     </div>
                       {% if subject.marks_entered %}
                       <div class="progress" role="progressbar" aria-label="Warning example"
@@ -85,7 +85,7 @@
                       aria-valuemin="0" aria-valuemax="100">
                       <div class="progress-bar progress-bar-striped progress-bar-animated text"
                         style="width: {{ subject.sub_passed|percentage:subject.sub_total|floatformat:2 }}%">
-                        {{ subject.sub_passed|percentage:subject.sub_total|floatformat:2 }}%</div>
+                        Pass record: {{ subject.sub_passed|percentage:subject.sub_total|floatformat:2 }}%</div>
                     </div>
                        {% endif %}
                   </div>

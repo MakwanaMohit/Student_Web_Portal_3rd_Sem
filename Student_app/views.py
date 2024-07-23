@@ -13,9 +13,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from .models import Student as appstu
 from .models import Student_Marks
+from .models import Publish_Result
 from user.models import Student,User
 from main.models import Sub_Syllabus
-from .forms import Student_register,Student_login
+from .forms import Student_register,Student_login,Student_result
 from .utils import *
 from django.urls import reverse
 import smtplib
@@ -225,62 +226,101 @@ def forgot(request):
 
 
 
-@login_required(login_url='/student/signin')
 def result(request):
+    if request.user.is_authenticated:return auth_result(request)
+
+
+def auth_result(request):
+    if request.user.role != User.Role.STUDENT:
+        messages.error(request,'You are not a student !')
+        return redirect('main home')
+    session = []
+    stu = app_stu.objects.get(stu_enroll=request.user.username)
+    marks = []
+    stu_marks = Student_Marks.objects.filter(student=stu)
+    for sem,mty in list(stu_marks.values_list('stu_sem','exam_type').distinct()):marks.append(f'S{sem}-{mty}')
+    marks.sort(reverse=True)
+    published = Publish_Result.objects.filter(published=True,id__in=marks)
+    t = list(published.values_list('year','session').distinct())
+    t.sort(reverse=True)
+    for year,sess in t:session.append(f'{sess}-{year}')
+    context = {'session':session}
+
+
     if request.method == 'POST':
-        sem = request.POST.get('sem',None)
-        enroll =  request.user.username
-        stu = Student_Marks.objects.filter(stu_sem = sem,stu_enroll=enroll)
-        if len(stu)<1:
-            messages.error(request,'this is a wrong sem or the result for these sem is not available\n please reenter the sem')
+        sess = request.POST.get('session',session[0])
+        context['curr_session'] = sess
+        ses,year = sess.split('-')
+        e_type = request.POST.get('exam-type',None)
+        context['ctype'] = e_type
+        if e_type:
+            sem = int(e_type[3])
+            sttype = ses[0]+year+'-'+e_type.split('-')[1].title()
+            marks = stu_marks.filter(stu_sem=sem,exam_type=sttype)
+            first = marks.first()
+            if request.POST.get('pdf'):
+                pdf = get_template("Student_app/pdf_result.html")
+                context.update({
+                    'student_marks': marks,
+                    'first_mark': first,
+                    'student': first.student,
+                    'subject': first.subject,
+                    'sem': True,
+                    'pdf': False
+                })
+                pdf_render = pdf.render(context)
+                custom_style = CSS(string='@page { size: A4; } body { transform: scale(1.1); }')
+                # Generate PDF using WeasyPrint
+                pdf_file = HTML(string=pdf_render).write_pdf(stylesheets=[custom_style])
 
-            return redirect('student result')
-        first = stu[0]
-        sub = None
-
-        if request.POST.get('pdf'):
-
-            pdf = get_template("Student_app/pdf_result.html")
-            pdf_render = pdf.render({
-            'student_marks':stu,
-            'first_mark':first,
-            'student':first.student,
-            'subject':first.subject,
-            'sem':True,
-            'pdf':False
-            })
-            custom_style = CSS(string='@page { size: A4; } body { transform: scale(1.1); }')
-            # Generate PDF using WeasyPrint
-            pdf_file = HTML(string=pdf_render).write_pdf(stylesheets=[custom_style])
-
-            # Create an HTTP response with PDF content
-            response = HttpResponse(pdf_file, content_type='application/pdf')
-            response['Content-Disposition'] = f'{first.student.stu_name}filename="result.pdf"'
-            return response
-        return render(request,"Student_app/result.html",{
-            'student_marks':stu,
+                # Create an HTTP response with PDF content
+                response = HttpResponse(pdf_file, content_type='application/pdf')
+                response['Content-Disposition'] = f'{first.student.stu_name}filename="result.pdf"'
+                return response
+            context.update({
+            'student_marks':marks,
             'first_mark':first,
             'student':first.student,
             'subject':first.subject,
             'sem':True,
             'pdf':True
         })
-    sem = []
-    try:
-        student = appstu.objects.get(stu_enroll=request.user.username)
-        marks = Student_Marks.objects.get_queryset().filter(student=student)
-        for mark in marks:
-            se = mark.stu_sem
-            if se not in sem:sem.append(se)
-    except Exception as e:
-        messages.error(request, "marks entry for you is not done yet please try after your result date declare")
-        return redirect(reverse('student home'))
-    if not sem:
-        messages.error(request,"marks entry for you is not done yet please try after your result date declare")
-        return redirect(reverse('student home'))
-    return render(request,'Student_app/result.html',{'url_name':reverse('student result'),'sem_information':sem})
+            return render(request,"Student_app/result.html",context)
 
 
+        ty = published.filter(year=year,session=ses).values_list('sem','type').distinct().order_by('sem')
+        type = []
+        for sem,typ in ty:type.append(f'Sem{sem}-{typ}')
+        context['type'] = type
+        return render(request, 'Student_app/result.html', context)
+    context['curr_session'] = session[0]
+    ses,year = session[0].split('-')
+    ty = published.filter(year=year,session=ses).values_list('sem','type').distinct().order_by('sem')
+    type = []
+    for sem,typ in ty:type.append(f'Sem{sem}-{typ}')
+    context['type'] = type
+    context['ctype'] = type[0]
+    return render(request, 'Student_app/result.html', context)
+
+
+# if request.POST.get('pdf'):
+#     pdf = get_template("Student_app/pdf_result.html")
+#     pdf_render = pdf.render({
+#         'student_marks': stu,
+#         'first_mark': first,
+#         'student': first.student,
+#         'subject': first.subject,
+#         'sem': True,
+#         'pdf': False
+#     })
+#     custom_style = CSS(string='@page { size: A4; } body { transform: scale(1.1); }')
+#     # Generate PDF using WeasyPrint
+#     pdf_file = HTML(string=pdf_render).write_pdf(stylesheets=[custom_style])
+#
+#     # Create an HTTP response with PDF content
+#     response = HttpResponse(pdf_file, content_type='application/pdf')
+#     response['Content-Disposition'] = f'{first.student.stu_name}filename="result.pdf"'
+#     return response
 
 
 

@@ -104,14 +104,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 AUTH_USER_MODEL = 'user.User'
 
-hellomohit = {
+DATABASESaa = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'Django_student',
-        'HOST':'192.168.109.191',
+        'NAME':'studentweb',
+        'HOST':'localhost',
         'PORT': 3306,
-        'USER':'mohit_django',
-        'PASSWORD':'kali@mysql'
+        'USER':'studentw',
+        'PASSWORD':'project_to_manage_students'
     }
 }
 DATABASES = {

@@ -31,6 +31,7 @@ class Student(models.Model):
         return str(self.stu_enroll)
 
 
+
 class Student_Marks(models.Model):
     class Session(models.TextChoices):
         WINTER = 'WINTER', 'Winter'
@@ -105,6 +106,19 @@ class Upload_from_xlsx(models.Model):
     def __str__(self):
         return self.upload_description
 
+class Publish_Result(models.Model):
+    class Type(models.TextChoices):
+        REGULAR = 'REGULAR', 'Regular'
+        REMEDIAL = 'REMEDIAL', 'Remedial'
+
+    id = models.CharField(max_length=16, primary_key=True, unique=True)
+    sem = models.IntegerField(default=5)
+    year = models.CharField(max_length=4, default='2022')
+    session = models.CharField(max_length=50,
+                               choices=Student_Marks.Session.choices)
+    type = models.CharField(max_length=50, choices=Type.choices)
+    published = models.BooleanField(default=False)
+
 
 @receiver(pre_save, sender=Upload_from_xlsx)
 def add_name(sender, instance, *args, **kwargs):
@@ -137,3 +151,11 @@ def add_prefix_to_id(sender, instance, *args, **kwargs):
         instance.stu_sub_code = instance.subject.sub_code
         instance.stu_branch_code = instance.student.stu_branch_code
         instance.Assigned_Sub_Faculty = instance.subject.Assigned_Sub_Faculty
+        try:
+            id = f'S{instance.stu_sem}-{instance.exam_type}'
+            Publish_Result.objects.get(id=id)
+        except Publish_Result.DoesNotExist:
+            res = Publish_Result(id=id, year=instance.year, session=instance.session)
+            res.type = Publish_Result.Type.REMEDIAL if instance.is_remedial else Publish_Result.Type.REGULAR
+            res.sem = instance.stu_sem
+            res.save()

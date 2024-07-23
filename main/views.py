@@ -127,7 +127,17 @@ def change_email():
 
 def home(request):
     # gtu_exam_fetch()
-    # change_email()
+    # # change_email()
+    # marks = Student_Marks.objects.all()
+    # for instance in marks:
+    #     try:
+    #         id = f'S{instance.stu_sem}-{instance.exam_type}'
+    #         Publish_Result.objects.get(id=id)
+    #     except Publish_Result.DoesNotExist:
+    #         res = Publish_Result(id=id, year=instance.year, session=instance.session)
+    #         res.type = Publish_Result.Type.REMEDIAL if instance.is_remedial else Publish_Result.Type.REGULAR
+    #         res.sem = instance.stu_sem
+    #         res.save()
     return render(request,'main/home.html')
 
 def syllabus(request):
