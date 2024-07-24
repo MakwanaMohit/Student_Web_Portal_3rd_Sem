@@ -184,7 +184,7 @@
       </nav>
       {% for message in messages %}
     <div class="alert alert-{% if message.tags == 'error'%}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-      <strong>Message:</strong>{{message}}
+      <strong>Message: </strong>{{message}}
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 {%endfor%}
@@ -333,7 +333,7 @@
   </section>
   <footer class="footer">
     <div>
-      <h4>Made By Makwana Mohit</h4>
+        <h4>Made By <a href="https://codewithmk.site/" style="all: unset;">Makwana Mohit</a></h4>
 
       <a href=""></a>
     </div>

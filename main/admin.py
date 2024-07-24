@@ -40,3 +40,4 @@ class GtuExamAdmin(admin.ModelAdmin):
     list_order = ['sub_sem','sub_academic_term','type']
     def get_readonly_fields(self, request, obj=None):
         return ['sub_code','sub_sem']
+

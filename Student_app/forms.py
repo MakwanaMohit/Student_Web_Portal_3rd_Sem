@@ -14,4 +14,9 @@ class Student_login(forms.Form):
     captcha = CaptchaField()
 
 class Student_result(forms.Form):
+
+    captcha = CaptchaField()
+
+class Student_result_enroll(forms.Form):
+    enrollment = forms.CharField(max_length=12,required=True)
     captcha = CaptchaField()

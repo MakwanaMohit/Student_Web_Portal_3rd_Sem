@@ -40,8 +40,8 @@ SHOW_THEMES = True
 SHOW_COUNTS = 1212
 
 # Captcha settings
-CAPTCHA_LENGTH = 6
-CAPTCHA_FONT_SIZE = 65
+CAPTCHA_LENGTH = 4
+CAPTCHA_FONT_SIZE = 32
 
 
 # Application definition

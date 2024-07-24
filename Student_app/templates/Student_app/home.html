@@ -2,6 +2,23 @@
 
 {% block body %}
        <h3>Welcome to Student portal</h3>
+    <ul class="list-group">
+    {% for result in results %}
+        <li class="list-group-item">
+            <h6>SEMESTER {{ result.2 }}-{{ result.1 }} {{ result.0 }}-{{ result.3 }} | result published</h6>
+            <form action="{% url 'student result' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <input name="session" type="hidden" value="{{ result.1 }}-{{ result.0 }}">
+                <input name="exam-type" type="hidden" value="Sem{{ result.2 }}-{{ result.3 }}">
+                <input type="hidden" name="show" id="show" value="true">
+                <input class="btn" type="submit" value="View">
+            </form>
+        </li>
+    {% endfor %}
+    </ul>
+
+
+
     {% if user.is_authenticated %}
             <h3>Hello {{ fname }}</h3>
             <h4>You're Successfully Logged in.</h4>

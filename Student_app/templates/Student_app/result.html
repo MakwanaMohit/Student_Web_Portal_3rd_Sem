@@ -1,175 +1,208 @@
 {% extends 'Student_app/base.html' %}
 {% block body %}
     <section class="section-1 center-align">
-    	<section class="p-5 hello">
-  <div class="container-fluid h-custom">
-    <div class="row d-flex h-50">
-    <div class="card card-login">
-    <div class="row">
-            <div class="col">
-                <h5 class="fc-header-title" id="loginLabel">Select Session</h5>
-                <form action="{% url 'student result' %}" method="post" id="session-form">{% csrf_token %}
-                <div class="form-outline mb-4">
-                    <select class="form-control" name="session" id="session" aria-label="Default select example" onchange="document.getElementById('session-form').submit()">
-                        <option selected value="{{ curr_session }}">{{ curr_session }}</option>
-                        {% for sess in session%}
-                            <option value="{{ sess }}">{{ sess }}</option>
-                        {% endfor %}
-                    </select>
-                    <input type="submit" style="display:none;">
+        <section class="p-5 hello">
+            <div class="container-fluid h-custom p-3">
+                <div class="row d-flex h-50">
+                    <div class="card card-login p-3">
+                        <div class="row">
+                            <h5 class="fc-header-title" id="loginLabel">Select Session</h5>
+                            <form action="{% url 'student result' %}" method="post" id="session-form">{% csrf_token %}
+                                <div class="form-outline mb-4">
+                                    <select class="form-control" name="session" id="session"
+                                            aria-label="Default select example"
+                                            onchange="document.getElementById('session-form').submit()">
+                                        <option selected value="{{ curr_session }}">{{ curr_session }}</option>
+                                        {% for sess in session %}
+                                            <option value="{{ sess }}">{{ sess }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="submit" style="display:none;">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row">
+                            <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Select
+                                Semester</h5>
+                            <form action="{% url 'student result' %}" method="post"
+                                  id="semester-form">{% csrf_token %}
+                                <input name="session" type="hidden" value="{{ curr_session }}">
+                                <div class="form-outline mb-4">
+                                    <div class="row">
+                                        <div class="col">
+                                            <select class="form-control" name="exam-type" id="exam-type"
+                                                    aria-label="Default select example" required>
+                                                <option value="{{ ctype }}">{{ ctype }}</option>
+                                                {% for ty in type %}
+                                                    <option value="{{ ty }}">{{ ty }}</option>
+                                                {% endfor %}
+                                            </select><br>
+                                        </div>
+                                        {% if form.enrollment %}
+                                            <div class="col">{{ form.enrollment }}</div>{% endif %}
+                                    </div>
+                                    <div class="row" style="align-content: center;justify-content: center;">
+                                        <div class="col" id="captcha-image"></div>
+                                        <div class="col" id="captcha-content">{{ form.captcha }}</div>
+                                        <div class="col"><input class="btn form-control form-input" type="submit"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                </form>
-              <div class="col">
-                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Select Semester</h5>
-                <form action="{% url 'student result' %}" method="post" id="semester-form">{% csrf_token %}
-                <input name="session" type="hidden" value="{{ curr_session }}">
-                <div class="form-outline mb-4">
-                    <select class="form-control" name="exam-type" id="exam-type" aria-label="Default select example" required onchange="document.getElementById('semester-form').submit()">
-                    <option value="{{ ctype }}">{{ ctype }}</option>
-                        {% for ty in type%}
-                            <option value="{{ ty }}">{{ ty }}</option>
-                        {% endfor %}
-                    </select><br>
-                    <input class="btn" type="submit">
-                </div>
-                </form>
             </div>
-            </div>
-          </div>
-    </div>
-        </div>
-    </div>
-  </div>
-</section>
-  </section>
-<br>
+        </section>
+    </section>
+    <br>
     {% if sem %}
-     <table id="result_marks" class="table table-success table-striped-columns center-align " style="direction: ltr; " width="70%">
+        <table id="result_marks" class="table table-success table-striped-columns center-align "
+               style="direction: ltr; " width="70%">
 
-      <tbody><tr><th colspan="4">GUJARAT TECHNOLOGY UNIVERCITY </th></tr>
-      <tr><th colspan="4">Ahemdabad,INDIA</th></tr>
-      <tr><th colspan="4">Semester Grade Report</th>
+            <tbody>
+            <tr>
+                <th colspan="4">GUJARAT TECHNOLOGY UNIVERCITY</th>
+            </tr>
+            <tr>
+                <th colspan="4">Ahemdabad,INDIA</th>
+            </tr>
+            <tr>
+                <th colspan="4">Semester Grade Report</th>
 
-      </tr><tr>
-        <td>Academic Year</td>
-        <td>Term of Examination</td>
-        <td>Semester</td>
-        <td>Statement No.</td>
-      </tr>
-      <tr>
-        <td>{{ first_mark.stu_term }}</td>
-        <td>{{ first_mark.session }}</td>
-        <td>{{ first_mark.stu_sem }}</td>
-        <td>W221062512</td>
-      </tr>
-      <tr>
-        <td colspan="4">Institute Code &amp; Name : 634 L.E.COLLAGE,MORBI</td>
-      </tr>
-    </tbody></table>
-    <table class="table table-success table-striped" style="direction: ltr;" width="70%">
-      <tbody><tr>
-        <th>Course</th>
-        <th> Branch Name</th>
-        <th>Branch Code</th>
-      </tr>
-      <tr>
-        <td>DIPLOMA IN ENGINEERING </td>
-        <td>{{ student.stu_branch }}</td>
-        <td>{{ student.stu_branch_code }}</td>
+            </tr>
+            <tr>
+                <td>Academic Year</td>
+                <td>Term of Examination</td>
+                <td>Semester</td>
+                <td>Statement No.</td>
+            </tr>
+            <tr>
+                <td>{{ first_mark.stu_term }}</td>
+                <td>{{ first_mark.session }}</td>
+                <td>{{ first_mark.stu_sem }}</td>
+                <td>W221062512</td>
+            </tr>
+            <tr>
+                <td colspan="4">Institute Code &amp; Name : 634 L.E.COLLAGE,MORBI</td>
+            </tr>
+            </tbody>
+        </table>
+        <table class="table table-success table-striped" style="direction: ltr;">
+            <tbody>
+            <tr>
+                <th>Course</th>
+                <th> Branch Name</th>
+                <th>Branch Code</th>
+            </tr>
+            <tr>
+                <td>DIPLOMA IN ENGINEERING</td>
+                <td>{{ student.stu_branch }}</td>
+                <td>{{ student.stu_branch_code }}</td>
 
-      </tr>
-    </tbody></table>
-    <table class="table table-success table-striped" style="direction: ltr; " width:70%="">
-        <tbody><tr>
-            <th colspan="2">Name :</th>
-          <th colspan="5">{{ student.stu_name }}</th>
-        </tr>
-        <tr>
-            <th colspan="2">Enrolment No</th>
-            <th colspan="5">{{ student.stu_enroll }}</th>
-        </tr>
-         <!--<th>roll no</th>
-        <th>branch</th>
-        <th>sem</th>
-        <th>sem</th>
-        <th>term</th>-->
-        <tr>
-            <td>Subject Code</td>
-            <td>Subject Name</td>
-            <td>Subject Credit</td>
-            <td>Theory ESE</td>
-            <td>Theory PA</td>
-            <td>Practical ESE</td>
-            <td>Practical PA</td>
-        </tr>
+            </tr>
+            </tbody>
+        </table>
+        <table class="table table-success table-striped" style="direction: ltr;">
+            <tbody>
+            <tr>
+                <th colspan="2">Name :</th>
+                <th colspan="5">{{ student.stu_name }}</th>
+            </tr>
+            <tr>
+                <th colspan="2">Enrolment No</th>
+                <th colspan="5">{{ student.stu_enroll }}</th>
+            </tr>
+            <!--<th>roll no</th>
+           <th>branch</th>
+           <th>sem</th>
+           <th>sem</th>
+           <th>term</th>-->
+            <tr>
+                <td>Subject Code</td>
+                <td>Subject Name</td>
+                <td>Subject Credit</td>
+                <td>Theory ESE</td>
+                <td>Theory PA</td>
+                <td>Practical ESE</td>
+                <td>Practical PA</td>
+            </tr>
 
-        {% for marks in student_marks%}<tr>
-            
-            <td><a style="text-decoration: none;" href="{% url 'main syllabus' %}?sub_code={{ marks.subject.sub_code }}&branch={{ student.stu_branch_code }}">{{ marks.subject.sub_code }}</a></td>
-          <td><a style="text-decoration: none" href="{% url 'main syllabus' %}?sub_code={{ marks.subject.sub_code }}&branch={{ student.stu_branch_code }}">{{ marks.sub_name }}</a></td>
-          <td>{{ marks.subject.sub_credit }}</td>
-          <td>{% if marks.subject.sub_theory_ESE %}{{ marks.stu_theory_ESE }}{% else %}-{% endif %}</td>
-          <td>{% if marks.subject.sub_theory_mid1 %}{{ marks.stu_theory_PA }}{% else %}-{% endif %}</td>
-          <td>{% if marks.subject.sub_prctical_ESE %}{{ marks.stu_practical_ESE }}{% else %}-{% endif %}</td>
-          <td>{% if marks.subject.sub_prctical_PA %}{{ marks.stu_practical_PA }}{% else %}-{% endif %}</td>
+            {% for marks in student_marks %}
+                <tr>
 
-        </tr>{% endfor %}
-        <tr>
-          <td colspan="8">Backlog</td>
-        </tr>
-        <tr>
-          <td>sem i</td>
-          <td>sem ii</td>
-          <td>sem iii</td>
-          <td>sem iv</td>
-          <td>sem v</td>
-          <td>sem vi</td>
-          <td>sem vii</td>
+                    <td><a style="text-decoration: none;"
+                           href="{% url 'main syllabus' %}?sub_code={{ marks.subject.sub_code }}&branch={{ student.stu_branch_code }}">{{ marks.subject.sub_code }}</a>
+                    </td>
+                    <td><a style="text-decoration: none"
+                           href="{% url 'main syllabus' %}?sub_code={{ marks.subject.sub_code }}&branch={{ student.stu_branch_code }}">{{ marks.sub_name }}</a>
+                    </td>
+                    <td>{{ marks.subject.sub_credit }}</td>
+                    <td>{% if marks.subject.sub_theory_ESE %}{{ marks.stu_theory_ESE }}{% else %}-{% endif %}</td>
+                    <td>{% if marks.subject.sub_theory_mid1 %}{{ marks.stu_theory_PA }}{% else %}-{% endif %}</td>
+                    <td>{% if marks.subject.sub_prctical_ESE %}{{ marks.stu_practical_ESE }}{% else %}-{% endif %}</td>
+                    <td>{% if marks.subject.sub_prctical_PA %}{{ marks.stu_practical_PA }}{% else %}-{% endif %}</td>
 
-        </tr>
-        <tr>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
+                </tr>{% endfor %}
+            <tr>
+                <td colspan="8">Backlog</td>
+            </tr>
+            <tr>
+                <td>sem i</td>
+                <td>sem ii</td>
+                <td>sem iii</td>
+                <td>sem iv</td>
+                <td>sem v</td>
+                <td>sem vi</td>
+                <td>sem vii</td>
+
+            </tr>
+            <tr>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
+                <td>0</td>
 
 
-        </tr>
-        <tr>
-          <td>Credits</td>
-          <td>Earned Grade Points</td>
-          <td>SPI</td>
-          <td>Earned Credits</td>
-          <td>Earned Grade Points</td>
-          <td>CPI</td>
-          <td colspam="2">Results</td>
-        </tr>
-        <tr>
-          <td>19</td>
-          <td>177</td>
-          <td>9.32</td>
-          <td>19</td>
-          <td>177</td>
-          <td>9.32</td>
-          <td>pass</td>
-        </tr>
-      </tbody></table>
+            </tr>
+            <tr>
+                <td>Credits</td>
+                <td>Earned Grade Points</td>
+                <td>SPI</td>
+                <td>Earned Credits</td>
+                <td>Earned Grade Points</td>
+                <td>CPI</td>
+                <td colspam="2">Results</td>
+            </tr>
+            <tr>
+                <td>19</td>
+                <td>177</td>
+                <td>9.32</td>
+                <td>19</td>
+                <td>177</td>
+                <td>9.32</td>
+                <td>pass</td>
+            </tr>
+            </tbody>
+        </table>
         {% if pdf %}
-        <form action="{% url 'student result' %}"  method="post">
-            {% csrf_token %}
-             <input name="session" type="hidden" value="{{ curr_session }}">
-             <input name="exam-type" type="hidden" value="{{ ctype }}">
-            <input type="hidden" name="pdf" id="pdf" value="true">
-            <div class="button">
-                <button type="submit" class="btn btn-primary btn-block btn-large" >
-                   View PDF</button>
-            </div>
-        </form>
+            <form action="{% url 'student result' %}" method="post">
+                {% csrf_token %}
+                <input name="session" type="hidden" value="{{ curr_session }}">
+                <input name="exam-type" type="hidden" value="{{ ctype }}">
+                <input type="hidden" name="pdf" id="pdf" value="true">
+                <input type="hidden" name="session-key" value="{{ session_key }}">
+                <input type="hidden" name="enrollment" value="{{ enrollment }}">
+                <button type="submit" class="btn">
+                    View PDF
+                </button>
+            </form>
         {% endif %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+                crossorigin="anonymous"></script>
 
     {% endif %}
 
@@ -178,34 +211,60 @@
 
 
 {% block css %}
-	<style>
-    .hello{
-        background-color: #90bcb1;
-        border-radius: 5px;
-    }
-    .card-login{
-        background-color: #e3f3ef;
-    }
-    .form-input{
-        border: 2px solid #141c1a;
-        background-color: #90bcb1;
-    }
-    .divider:after,
-.divider:before {
-content: "";
-flex: 1;
-height: 1px;
-background: #eee;
-}
-.h-custom {
-height: calc(100% - 73px);
-}
-@media (max-width: 450px) {
-.h-custom {
-height: 100%;
-}
-}
+    <style>
+        .hello {
+            background-color: #90bcb1;
+            border-radius: 5px;
+        }
+
+        .card-login {
+            background-color: #e3f3ef;
+        }
+
+        .form-input {
+            border: 2px solid #141c1a;
+            background-color: #90bcb1;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .h-custom {
+            height: calc(100% - 73px);
+        }
+
+        @media (max-width: 450px) {
+            .h-custom {
+                height: 100%;
+            }
+        }
     </style>
+{% endblock %}
+
+{% block js %}
+    <script>
+        {% if form.enrollment %}
+            var enroll = document.getElementById('id_enrollment');
+            enroll.classList.add("form-control");
+            enroll.placeholder = "Enrollment Number";
+        {% endif %}
+        var captcha = document.getElementById("id_captcha_1")
+        captcha.classList.add("form-control")
+        captcha.placeholder = "Captcha";
+
+        var class1 = document.getElementById("captcha-content");
+        var class2Container = document.getElementById("captcha-image")
+        var helloImage = class1.querySelector(".captcha");
+        {#helloImage.style.width = "140px";#}
+        class2Container.appendChild(helloImage.cloneNode(true));
+        helloImage.remove();
+
+    </script>
 {% endblock %}
 
 

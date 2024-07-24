@@ -16,7 +16,7 @@ from .models import Student_Marks
 from .models import Publish_Result
 from user.models import Student,User
 from main.models import Sub_Syllabus
-from .forms import Student_register,Student_login,Student_result
+from .forms import Student_register,Student_login,Student_result,Student_result_enroll
 from .utils import *
 from django.urls import reverse
 import smtplib
@@ -30,7 +30,9 @@ from weasyprint import HTML,CSS
 def home(request):
     from Student_app.utils import generate_fake_students
     # generate_fake_students()
-    return render(request,"Student_app\home.html",{'user':request.user})
+    publish = sorted(list(Publish_Result.objects.filter(published=True).values_list('year','session','sem','type').distinct()),reverse=True)
+
+    return render(request,"Student_app\home.html",{'user':request.user,'results':publish})
 
 def signup(request):
     if request.method == 'POST':
@@ -227,24 +229,25 @@ def forgot(request):
 
 
 def result(request):
-    if request.user.is_authenticated:return auth_result(request)
-
-
-def auth_result(request):
-    if request.user.role != User.Role.STUDENT:
-        messages.error(request,'You are not a student !')
-        return redirect('main home')
+    published = Publish_Result.objects.filter(published=True)
+    Form = Student_result_enroll
     session = []
-    stu = app_stu.objects.get(stu_enroll=request.user.username)
-    marks = []
-    stu_marks = Student_Marks.objects.filter(student=stu)
-    for sem,mty in list(stu_marks.values_list('stu_sem','exam_type').distinct()):marks.append(f'S{sem}-{mty}')
-    marks.sort(reverse=True)
-    published = Publish_Result.objects.filter(published=True,id__in=marks)
+    if request.user.is_authenticated:
+        Form = Student_result
+        if request.user.role != User.Role.STUDENT:
+            messages.error(request,'You are not a student !')
+            return redirect('main home')
+
+        stu = app_stu.objects.get(stu_enroll=request.user.username)
+        marks = []
+        stu_marks = Student_Marks.objects.filter(student=stu)
+        for sem,mty in list(stu_marks.values_list('stu_sem','exam_type').distinct()):marks.append(f'S{sem}-{mty}')
+        marks.sort(reverse=True)
+        published = published.filter(id__in=marks)
     t = list(published.values_list('year','session').distinct())
     t.sort(reverse=True)
     for year,sess in t:session.append(f'{sess}-{year}')
-    context = {'session':session}
+    context = {'session':session,'form':Form()}
 
 
     if request.method == 'POST':
@@ -253,21 +256,54 @@ def auth_result(request):
         ses,year = sess.split('-')
         e_type = request.POST.get('exam-type',None)
         context['ctype'] = e_type
+        ty = published.filter(year=year, session=ses).values_list('sem', 'type').distinct().order_by('sem')
+        type = []
+        for sem, typ in ty: type.append(f'Sem{sem}-{typ}')
+        context['type'] = type
+        form = Form(request.POST)
+
+        if request.POST.get('show',False):
+            return render(request, "Student_app/result.html", context)
+
         if e_type:
+            valid = form.is_valid() or (request.session.get('session-key') == request.POST.get('session-key') and request.POST.get('session-key') != None)
+            request.session['session-key'] = generate_password()
+            if not request.user.is_authenticated:
+                enroll = form.cleaned_data.get('enrollment')
+            else:enroll = request.user.username
+            if not valid:
+                messages.error(request,'Invalid captcha')
+                context['form'] = Form(initial={'enrollment': enroll})
+                return render(request, "Student_app/result.html", context)
+            if not request.user.is_authenticated:
+                try:
+                    stu = app_stu.objects.get(stu_enroll=enroll)
+                    stu_marks = Student_Marks.objects.filter(student=stu)
+                    context['form'] = Form(initial={'enrollment':enroll})
+                except app_stu.DoesNotExist:
+                    messages.error(request,'Invalid enrollment number')
+                    return render(request, "Student_app/result.html", context)
+
+
+
+
             sem = int(e_type[3])
             sttype = ses[0]+year+'-'+e_type.split('-')[1].title()
-            marks = stu_marks.filter(stu_sem=sem,exam_type=sttype)
+            marks = stu_marks.filter(stu_sem=sem, exam_type=sttype)
+            if len(marks) < 1:
+                messages.error(request,f'There is no Sem{sem}-{sttype} result for student Enrollment: {enroll}')
+                return render(request, "Student_app/result.html", context)
             first = marks.first()
+            context.update({
+                'student_marks': marks,
+                'first_mark': first,
+                'student': first.student,
+                'subject': first.subject,
+                'sem': True,
+                'pdf': True
+            })
             if request.POST.get('pdf'):
                 pdf = get_template("Student_app/pdf_result.html")
-                context.update({
-                    'student_marks': marks,
-                    'first_mark': first,
-                    'student': first.student,
-                    'subject': first.subject,
-                    'sem': True,
-                    'pdf': False
-                })
                 pdf_render = pdf.render(context)
                 custom_style = CSS(string='@page { size: A4; } body { transform: scale(1.1); }')
                 # Generate PDF using WeasyPrint
@@ -277,22 +313,14 @@ def auth_result(request):
                 response = HttpResponse(pdf_file, content_type='application/pdf')
                 response['Content-Disposition'] = f'{first.student.stu_name}filename="result.pdf"'
                 return response
-            context.update({
-            'student_marks':marks,
-            'first_mark':first,
-            'student':first.student,
-            'subject':first.subject,
-            'sem':True,
-            'pdf':True
-        })
+            request.session['session-key'] = s = generate_password()
+            context['session_key'] = s
+            context['enrollment'] = enroll
             return render(request,"Student_app/result.html",context)
 
 
-        ty = published.filter(year=year,session=ses).values_list('sem','type').distinct().order_by('sem')
-        type = []
-        for sem,typ in ty:type.append(f'Sem{sem}-{typ}')
-        context['type'] = type
         return render(request, 'Student_app/result.html', context)
+
     context['curr_session'] = session[0]
     ses,year = session[0].split('-')
     ty = published.filter(year=year,session=ses).values_list('sem','type').distinct().order_by('sem')
@@ -302,25 +330,6 @@ def auth_result(request):
     context['ctype'] = type[0]
     return render(request, 'Student_app/result.html', context)
 
-
-# if request.POST.get('pdf'):
-#     pdf = get_template("Student_app/pdf_result.html")
-#     pdf_render = pdf.render({
-#         'student_marks': stu,
-#         'first_mark': first,
-#         'student': first.student,
-#         'subject': first.subject,
-#         'sem': True,
-#         'pdf': False
-#     })
-#     custom_style = CSS(string='@page { size: A4; } body { transform: scale(1.1); }')
-#     # Generate PDF using WeasyPrint
-#     pdf_file = HTML(string=pdf_render).write_pdf(stylesheets=[custom_style])
-#
-#     # Create an HTTP response with PDF content
-#     response = HttpResponse(pdf_file, content_type='application/pdf')
-#     response['Content-Disposition'] = f'{first.student.stu_name}filename="result.pdf"'
-#     return response
 
 
 
