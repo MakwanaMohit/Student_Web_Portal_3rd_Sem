@@ -1,18 +1,33 @@
 {% extends 'main/base.html' %}
 
 {% block body %}
-<ul class="list-group">
-    {% for result in results %}
-        <li class="list-group-item">
-            <h6>SEMESTER {{ result.2 }}-{{ result.1 }} {{ result.0 }}-{{ result.3 }} | result published</h6>
-            <form action="{% url 'student result' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <input name="session" type="hidden" value="{{ result.1 }}-{{ result.0 }}">
-                <input name="exam-type" type="hidden" value="Sem{{ result.2 }}-{{ result.3 }}">
-                <input type="hidden" name="show" id="show" value="true">
-                <input class="btn" type="submit" value="View">
-            </form>
-        </li>
-    {% endfor %}
-    </ul>
+    <div class="accordion" id="result-publish">
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#result"
+                        aria-expanded="true" aria-controls="result">
+                    Show Results
+                </button>
+            </h2>
+            <div id="result" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <ul class="list-group">
+                        {% for result in results %}
+                            <li class="list-group-item">
+                                <h6>SEMESTER {{ result.2 }}-{{ result.1 }} {{ result.0 }}-{{ result.3 }} | result
+                                    published</h6>
+                                <form action="{% url 'student result' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input name="session" type="hidden" value="{{ result.1 }}-{{ result.0 }}">
+                                    <input name="exam-type" type="hidden" value="Sem{{ result.2 }}-{{ result.3 }}">
+                                    <input type="hidden" name="show" id="show" value="true">
+                                    <input class="btn" type="submit" value="View">
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
