@@ -62,9 +62,9 @@ class GtuExam(models.Model):
     subject = models.ForeignKey(Sub_Syllabus,on_delete=models.SET_NULL,null=True)
     sub_code = models.CharField(max_length=7,default='0000000')
     sub_branch_code = models.CharField(max_length=2,default='16')
-    sub_sem = models.IntegerField(default=0)
-    sub_academic_term = models.CharField(max_length=5)
-    sub_session = models.CharField(max_length=6)
+    sub_sem = models.IntegerField(default=0,verbose_name='Sem')
+    sub_academic_term = models.CharField(max_length=5,verbose_name='Term')
+    sub_session = models.CharField(max_length=6,verbose_name='Session')
     type = models.CharField(max_length=10, choices=Type.choices,default=Type.REGULAR)
     sub_pdf = models.FileField(upload_to='home/pdfs/exam')
 

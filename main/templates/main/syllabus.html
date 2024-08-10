@@ -41,7 +41,7 @@ height: 100%;
         <div class="col-lg-6 mb-5 mb-lg-0 ">
           <div class="card card-login">
             <div class="card-body py-5 px-md-5">
-                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Login Here</h5>
+                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Syllabus</h5>
                           <form action="{% url 'main syllabus' %}" method="post" id="login-form">{% csrf_token %}
                 <div class="form-outline mb-4 ">
                     <select name="branch" id="branch" class="form-control form-input" value="{{ branch|default_if_none:'' }}">

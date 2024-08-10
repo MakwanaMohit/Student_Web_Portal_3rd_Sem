@@ -3,18 +3,32 @@ from django.contrib.auth import authenticate, login, logout
 from django.template.loader import render_to_string, get_template
 from django.core.mail import EmailMessage
 from .models import Student_Marks
+from .models import Student as student
 from .models import Publish_Result
-from .forms import Student_register, Student_login, Student_result, Student_result_enroll
+from .forms import Student_register, Student_login, Student_result, Student_result_enroll,StudentUpdateForm
 from .utils import *
 from django.urls import reverse
 from weasyprint import HTML, CSS
-
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-
+def generate_unique_digit_strings(num_strings, length):
+    unique_strings = set()
+    while len(unique_strings) < num_strings:
+        # Generate a random string of digits
+        random_string = ''.join(random.choices(string.digits, k=length))
+        unique_strings.add(random_string)
+    return list(unique_strings)
 # @login_required(login_url='/student/signin')
 def home(request):
-    # generate_fake_students()
+    # # generate_fake_students()
+    # data = student.objects.all()
+    # for stu in data:
+    #     stu.gender = student.Gender.NONE
+    #     stu.save()
+    # s =Student.objects.get(username='226340316036')
+    # s.password = 'hello'
+    # s.save()
     publish = sorted(
         list(Publish_Result.objects.filter(published=True).values_list('year', 'session', 'sem', 'type').distinct()),
         reverse=True)
@@ -233,7 +247,7 @@ def result(request):
     if authenticated:
         Form = Student_result
 
-        stu = app_stu.objects.get(stu_enroll=request.user.username)
+        stu = student.objects.get(stu_enroll=request.user.username)
         marks = []
         stu_marks = Student_Marks.objects.filter(student=stu)
         for sem, mty in list(stu_marks.values_list('stu_sem', 'exam_type').distinct()): marks.append(f'S{sem}-{mty}')
@@ -274,10 +288,10 @@ def result(request):
                 return render(request, "Student_app/result.html", context)
             if not authenticated:
                 try:
-                    stu = app_stu.objects.get(stu_enroll=enroll)
+                    stu = student.objects.get(stu_enroll=enroll)
                     stu_marks = Student_Marks.objects.filter(student=stu)
                     context['form'] = Form(initial={'enrollment': enroll})
-                except app_stu.DoesNotExist:
+                except student.DoesNotExist:
                     messages.error(request, 'Invalid enrollment number')
                     return render(request, "Student_app/result.html", context)
 
@@ -325,55 +339,70 @@ def result(request):
     return render(request, 'Student_app/result.html', context)
 
 
-def seeder(request):
+@login_required(login_url='student signin')
+def profile(request):
+    student_instance = student.objects.get(stu_enroll=request.user.username)
     if request.method == 'POST':
-        se = request.POST['selection1']
-        if se == '2':
-            Student(username='hii2', password='hello', is_staff=True, is_superuser=True).save()
-            return HttpResponse('records makes sussecfully')
+        if request.POST.get('update', False):
+            return render(request, 'Student_app/profile.html', {'form': StudentUpdateForm(instance=student_instance)})
+        form = StudentUpdateForm(request.POST, request.FILES, instance=student_instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated')
         else:
-            # return HttpResponse('records makes sussecfully')
-            from faker import Faker
-            import random
+            return render(request, 'Student_app/profile.html', {'form': form})
+    return render(request, 'Student_app/profile.html',{'student': student_instance})
 
-            # Create a Faker instance
-            fake = Faker()
 
-            # Initialize an empty list to store student records
-            student_records = []
 
-            # Generate 30 random student records
-            for _ in range(150):
-                name = fake.name()
-                dob = fake.date_of_birth(minimum_age=5,
-                                         maximum_age=18)  # Generate DOB for students between 5 and 18 years old
-                address = fake.address()
-                mobile = fake.phone_number()
-                parent_mobile = fake.phone_number()
 
-                student_record = [name, dob, address, mobile[:10], parent_mobile[:10]]
-                student_records.append(student_record)
 
-            enr = {3: 226340316001,
-                   1: 236340316001,
-                   5: 216340316001}
-            for stu in student_records:
-                sem = random.choice([1, 3, 5])
-                enroll = enr[sem]
-                enr[sem] += 1
-                appstu.objects.create(
-                    stu_name=stu[0],
-                    stu_enroll=enroll,
-                    stu_sem=sem,
-                    stu_DOB=stu[1],
-                    # stu_branch_code = random.choice(list(branchlist.keys())),
-                    stu_branch_code='16',
-                    stu_mobile_num=stu[3],
-                    stu_parents_mobile_num=stu[4],
-                    stu_address=stu[2]
-                )
-                enroll += 1
 
-            return HttpResponse('records makes sussecfully')
-    messages.error(request, 'this is not correct')
-    return render(request, 'seed.html')
+
+
+def seeder(request):
+    # return HttpResponse('records makes sussecfully')
+    from faker import Faker
+    import random
+
+    # Create a Faker instance
+    fake = Faker()
+
+    # Initialize an empty list to store student records
+    student_records = []
+
+    # Generate 30 random student records
+    for _ in range(10):
+        name = fake.name()
+        dob = fake.date_of_birth(minimum_age=15,
+                                 maximum_age=18)  # Generate DOB for students between 5 and 18 years old
+        address = fake.address()
+        mobile = fake.phone_number()
+        parent_mobile = fake.phone_number()
+
+        student_record = [name, dob, address, mobile[:10], parent_mobile[:10]]
+        student_records.append(student_record)
+
+    enr = {3: 226340316001,
+           1: 246340316001,
+           5: 216340316001}
+    for stu in student_records:
+
+        enroll = enr[1]
+        enr[1] += 1
+        appstu.objects.create(
+            stu_name=stu[0],
+            stu_enroll=enroll,
+            stu_sem=1,
+            stu_DOB=stu[1],
+            # stu_branch_code = random.choice(list(branchlist.keys())),
+            stu_branch_code='16',
+            stu_mobile_num=stu[3],
+            stu_parents_mobile_num=stu[4],
+            stu_address=stu[2]
+        )
+        enroll += 1
+
+    return HttpResponse('records makes sussecfully')
+
+

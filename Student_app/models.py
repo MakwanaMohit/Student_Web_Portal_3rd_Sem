@@ -5,7 +5,6 @@ from django.db.models.signals import post_save, pre_save
 from django.db import models, IntegrityError
 from datetime import date
 from user.models import *
-
 from main.models import *
 from faculty.models import Faculty_Records
 
@@ -14,15 +13,26 @@ from faculty.models import Faculty_Records
 
 
 class Student(models.Model):
+    class Gender(models.TextChoices):
+        MALE = 'MALE', 'Male'
+        FEMALE = 'FEMALE', 'Female'
+        NONE = 'NONE', 'None'
+        OTHER = 'OTHER', 'Other'
+
     stu_name = models.CharField(max_length=50, default='')
     stu_enroll = models.CharField(max_length=12, unique=True, primary_key=True, default=000000000000,
                                   verbose_name='Student Enrollment Number')
+    adhar_no = models.CharField(max_length=12, unique=False,  default=000000000000,
+                                  verbose_name='Adhar No.')
     stu_sem = models.IntegerField()
     stu_DOB = models.DateField(default=date(2007, 1, 1))
+    gender = models.CharField(max_length=50,
+                              choices=Gender.choices, default=Gender.NONE)
     stu_branch = models.CharField(max_length=110)
     stu_branch_code = models.CharField(max_length=2, default='16')
     stu_mobile_num = models.CharField(max_length=10)
     stu_parents_mobile_num = models.CharField(max_length=10)
+    profile_picture = models.ImageField(upload_to='Student/profile_pic/', blank=True, null=True)
     stu_address = models.CharField(max_length=300)
     is_passed = models.BooleanField(default=True, verbose_name='Passed')
     is_passout = models.BooleanField(default=False, verbose_name='Passout')

@@ -1,15 +1,145 @@
-{% extends "main/base.html" %}
+{% extends 'main/base.html' %}
+{% block css %}
+    <style>
+        .hello {
+            background-color: #90bcb1;
+            border-radius: 5px;
+        }
+
+        .card-login {
+            background-color: #e3f3ef;
+        }
+
+        .form-input {
+            border: 2px solid #141c1a;
+            background-color: #90bcb1;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .h-custom {
+            height: calc(100% - 73px);
+        }
+
+        @media (max-width: 450px) {
+            .h-custom {
+                height: 100%;
+            }
+        }
+    </style>
+{% endblock %}
 {% block body %}
+    <section class="p-5 hello">
+        <div class="container-fluid h-custom">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                {#      <div class="col-md-9 col-lg-6 col-xl-5">#}
+                {#          {% load static %}#}
+                {#        <img src="{% static 'Student_app/images/signin image.webp' %}"#}
+                {#          class="img-fluid" alt="Sample image">#}
+                {#      </div>#}
 
-    <form id="emailForm">
-        <label for="message">Message:</label>
-        <textarea id="message" name="message" rows="4" cols="50"></textarea>
-        <br>
-        <button type="button" onclick="sendEmail()">Send Email</button>
-        {% load static %}
-    <a href="tel:+91 6351692129">+91 8485919493</a>
-    </form>
+                <div class="col-lg-6 mb-5 mb-lg-0 ">
+                    <div class="card card-login">
+                        <div class="card-body py-5 px-md-5">
+                            <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Exam Paper</h5>
+                            <form action="{% url 'main exam' %}" method="post" id="login-form">{% csrf_token %}
+                                <div class="form-outline mb-4 ">
+                                    <select name="branch" id="branch" class="form-control form-input"
+                                            value="{{ branch|default_if_none:'' }}">
+                                        <option value="00">Select Branch</option>
+                                        {% for key,branch in branches.items %}
+                                            {% if key != '00' %}
+                                                <option value="{{ key }}"
+                                                        {% if key ==  branchid %}selected{% endif %}>{{ key }}
+                                                    - {{ branch }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-outline mb-4">
+                                    <select name="sem" id="sem" class="form-control form-input"
+                                            data-default="{{ sem|default_if_none:'' }}">
+                                        <option value="0">SEM</option>
+                                        {% for foo in "12345678" %}
+                                            <option value="{{ foo }}"
+                                                    {% if foo == sem %}selected {% endif %}>{{ foo }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-outline mb-4">
+                                    <input class="form-control form-input" value="{{ sub_code|default_if_none:'' }}"
+                                           type="text" id="sub_code" name="sub_code" placeholder="Subject Code"
+                                           minlength="7" maxlength="7" data-default="0" style="text-align: left">
+                                </div>
+                                <!-- Submit button -->
+                                <button type="submit" class="btn btn-primary btn-block mb-4">
+                                    Submit
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="p-4">
+            <div>
+                <table class="table table-primary table-secondary table-sm" cellspacing="0" rules="all"
+                       id="GridViewToCategory">
+                    <tbody>
+                    <tr class="tbhedare">
+                        <th scope="col">Subcode</th>
+                        <th scope="col">Branch code</th>
+                        <th scope="col">Sem</th>
+                        <th scope="col">Term</th>
+                        <th scope="col">SubjectName</th>
+                        <th scope="col">Type</th>
+                    </tr>
+
+                    {% for query in queryset %}
+                        {#                <a href="{{ query.sub_pdf.url }}">{{ query.sub_name }}</a>#}
+                        <tr>
+                            <td align="center">
+                                <span id="GridViewToCategory_lblpdf_uploade_don_5" title="9/1/2022 11:43:40 AM"><a
+                                        href="{{ query.sub_pdf.url }}" target="_blank">{{ query.sub_code }}</a></span>
+
+                            </td>
+                            <td align="center">
+                                {{ query.sub_branch_code }}
+                            </td>
+                            <td align="center">
+                                {{ query.sub_sem }}
+                            </td>
+                            <td align="left">
+                                {{ query.sub_academic_term }}
+                            </td>
+                            <td align="left">
+                                &nbsp;{{ query.subject.sub_name }}
+                            </td>
+                            <td align="left">
+                                {{ query.type }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
 
+        </section>
+    </section>
+{% endblock %}
+{% block js %}
+    <script>
+        {#document.addEventListener('DOMContentLoaded', function() {#}
+        {#    var myModal = new bootstrap.Modal(document.getElementById('SignInModal'));#}
+        {#    myModal.show();});#}
 
+    </script>
 {% endblock %}

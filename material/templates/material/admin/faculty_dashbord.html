@@ -186,7 +186,7 @@
                               </div>
                               <div class="col">
                                 <p style="color:black;">Pass rate {{subject.sub_passed|percentage:subject.sub_total|floatformat:2 }}</p>
-                                <p style="color:black;">Subject average marks: {{ subject.sub_marks_average }}</p>
+                                <p style="color:black;">Subject average marks: {{ subject.sub_marks_average|floatformat:2 }}</p>
                                   <p style="color:black;">Subject Max marks: Student: <a href="{% url 'admin:Student_app_student_marks_changelist' %}{{ subject.sub_max.id }}/">{{ subject.sub_max.stu_name }}-{{ subject.sub_max.stu_enroll }}</a>--> {{ subject.sub_marks_max }}</p>
                                   <p style="color:black;">Subject min marks: Student: <a href="{% url 'admin:Student_app_student_marks_changelist' %}{{ subject.sub_min.id }}/">{{ subject.sub_min.stu_name }}-{{ subject.sub_min.stu_enroll }}</a>--> {{ subject.sub_marks_min }}</p>
 

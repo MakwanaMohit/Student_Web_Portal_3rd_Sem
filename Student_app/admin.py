@@ -78,16 +78,17 @@ class StudentAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Student's personal details ", {
             'classes': ('collapse',),
-            'fields': (('stu_name', 'stu_DOB'), ('stu_mobile_num', 'stu_parents_mobile_num'), 'stu_address'),
+            'fields': (('stu_name', 'stu_DOB','gender'), ('stu_mobile_num', 'stu_parents_mobile_num'), ('stu_address','profile_picture')),
         }),
         ("Student's Academic Details  ", {
             'classes': ('collapse',),
-            'fields': (('stu_enroll' , 'stu_sem', ), ('stu_branch' , 'stu_branch_code'),('is_passed', 'is_passout')),
+            'fields': (('stu_enroll','adhar_no' , 'stu_sem', ), ('stu_branch' , 'stu_branch_code'),('is_passed', 'is_passout')),
         }),
     )
     # fields = ['stu_name','stu_enroll','stu_sem','stu_DOB','stu_branch','stu_branch_code','stu_mobile_num','stu_parents_mobile_num','stu_address','is_passed']
-    list_display = ('stu_enroll','stu_name','stu_branch','stu_sem','is_passed','is_passout')
+    list_display = ('stu_enroll','stu_name','adhar_no','gender','stu_branch','stu_sem','is_passed','is_passout')
     list_filter = ('stu_sem','stu_branch')
+
     actions = ['next_term','make_marks_entry_for_Summer_Session','make_marks_entry_for_Winter_Session','generate_excel', 'upload_excel']
 
     def get_actions(self, request):
@@ -102,8 +103,8 @@ class StudentAdmin(admin.ModelAdmin):
                 del actions['next_term']
         return actions
     def changelist_view(self, request, extra_context=None):
-        if 'action' in request.POST and ( request.POST['action'] == 'generate_excel' or  request.POST['action'] == 'make_marks_field'):
-            if not request.POST.getlist(ACTION_CHECKBOX_NAME):
+        if 'action' in request.POST and ( request.POST['action'] == 'generate_excel' or request.POST['action'] == 'next_term' or  request.POST['action'] == 'make_marks_field'):
+            if not request.POST.getlist(ACTION_CHECKBOX_NAME)  or request.POST['action'] == 'next_term' :
                 post = request.POST.copy()
                 for u in Student.objects.all():
                     stu = u.stu_enroll
@@ -113,12 +114,13 @@ class StudentAdmin(admin.ModelAdmin):
         return super(StudentAdmin,self).changelist_view(request,extra_context)
 
     def next_term(self,request,queryset):
-        for student in queryset:
-            if student.is_passed and not student.is_passout:
-                student.stu_sem += 1
-                if student.stu_sem > 6:
-                    student.is_passout = True
-                student.save()
+        if request.user.is_superuser:
+            for student in queryset:
+                if student.is_passed and not student.is_passout:
+                    student.stu_sem += 1
+                    if student.stu_sem > 6:
+                        student.is_passout = True
+                    student.save()
 
     def make_marks_entry_for_Winter_Session(self,request,queryset,):
         return self.make_marks_entry_for_Summer_Session(request,queryset,Sub_Syllabus.Session.WINTER)
@@ -165,10 +167,11 @@ class StudentAdmin(admin.ModelAdmin):
         return super().delete_selected(request, queryset=None)
 
     def has_change_permission(self, request, obj=None):
+        return False
         if request.user.is_superuser:return True
         if obj and '1111' in obj.stu_enroll:
             return False
-        super().has_change_permission(request, obj)
+        return super().has_change_permission(request, obj)
 
     def get_readonly_fields(self, request, obj=None):
         # if obj and '1111' in obj.stu_enroll:
@@ -193,7 +196,8 @@ class StudentAdmin(admin.ModelAdmin):
         )
         target_obj.xlsx_file.save(f'generated_excel.xlsx', ContentFile(excel_buffer.read()), save=True)
 
-        modeladmin.message_user(request,'Now your xlsx record is created download xlsx file from this model edit and re upload in this then select create record action ')
+        modeladmin.message_user(request,'Now your xlsx record is created download xlsx file from this '
+                                        +'model edit and re upload in this then select create record action ')
         return redirect('/admin/Student_app/upload_from_xlsx/')
 
 
@@ -324,9 +328,11 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                             stu = Student.objects.create(
                             stu_name = row['stu_name'],
                             stu_enroll = row['stu_enroll'],
+                            adhar_no=row['adhar_no'],
                             stu_sem = row['stu_sem'],
                             stu_DOB = row['stu_DOB'],
                             stu_branch = row['stu_branch'],
+                            gender = row['gender'],
                             stu_branch_code = str(int(row['stu_branch_code'])),
                             stu_mobile_num = row['stu_mobile_num'],
                             stu_parents_mobile_num = row['stu_parents_mobile_num'],
@@ -349,6 +355,7 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                             stu.stu_theory_PA = row['stu_theory_PA']
                             stu.stu_practical_ESE = row['stu_practical_ESE']
                             stu.stu_practical_PA = row['stu_practical_PA']
+                            stu.marks_entered = True
                             stu.save()
                     except ValidationError as val:
                         messages.error(request,f'validtion error at line: {index} error: {str(val)}')
@@ -356,7 +363,7 @@ class upload_from_xlsxAdmin(admin.ModelAdmin):
                     except Exception as e:
                         messages.error(request,f'there is error: {str(e)} with this excel file at line: {index} please check model name and use only excel file that generate from this site')
                         return redirect('/admin/Student_app/upload_from_xlsx/')
-                    messages.success(request,'Successfully Added the students')
+                messages.success(request,'Successfully Added the students')
 
 
     process_xlsx.short_description = "Upload data from this file"

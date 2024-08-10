@@ -11,6 +11,7 @@ urlpatterns = [
     path('/signup',signup,name="student signup"),
     path('/signout',signout,name="student signout"),
     path('/result',result,name="student result"),
+    path('/profile',profile,name="student profile"),
     path('/signin',signin,name="student signin"),
     path('/forgot',forgot,name="student forgot"),
     # path('signup/',signup,name="signout")

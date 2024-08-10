@@ -79,7 +79,6 @@ class FacultyDashbordView(TemplateView):
         if rec:context.update(rec)
         return self.render_to_response(context)
     def get(self, request, *args, **kwargs):
-        # print(term)
         context = self.get_context_data(**kwargs)
         term = context['terms'][0]
         context['term'] = term
@@ -109,7 +108,6 @@ class AdminDashbordView(TemplateView):
         context['subject_analytics'] = get_admin_analytics(term)
         return self.render_to_response(context)
     def get(self, request, *args, **kwargs):
-        # print(term)
         context = self.get_context_data(**kwargs)
         term = context['terms'][0]
         context['term'] = term
@@ -119,7 +117,6 @@ class AdminDashbordView(TemplateView):
 def get_faculty_subject_analytics(fac,term):
     records = Student_Marks.objects.filter(Assigned_Sub_Faculty=fac,stu_term=term).order_by('-stu_sem')
     subjects = Sub_Syllabus.objects.filter(sub_id__in=records.values_list('subject',flat=True).distinct())
-    print(subjects)
     marks_work = ()
     row = {'semester': None, 'subject': tuple()}
     semester = subjects[0].sub_sem

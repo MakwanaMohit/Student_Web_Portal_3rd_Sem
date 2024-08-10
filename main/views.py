@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.db.models import CharField
 from django.shortcuts import render
 import requests ,csv
 from django.core.files.base import ContentFile
@@ -8,7 +9,7 @@ from django.http import HttpResponse,Http404
 from django.conf import settings
 from django.conf.urls.static import static
 from Student_app.models import *
-from Student_app.utils import branchlist
+from django.db.models.functions import Substr,Concat
 from Student_app.utils import branchlist
 # Create your views here.
 def homehii(request):
@@ -180,6 +181,46 @@ def syllabus(request):
     return render(request,'main/syllabus.html',{'branches':branchlist,'input':True})
 
 def exam(request):
+    if request.method == 'GET':
+        sem = request.GET.get('sem', None)
+        branch = request.GET.get('branch', None)
+        sub_code = request.GET.get('sub_code', None)
+        q = queryset = GtuExam.objects.annotate(
+               year = Substr('sub_academic_term', 2, 4),  # Year part
+               sess =  Substr('sub_academic_term', 1, 1),  # Season part
+        ).order_by('year','sess','sub_code').reverse()
+        if sub_code:
+            queryset = q.filter(sub_code=sub_code).order_by('sub_academic_term').reverse()
+        if branch and branch != '00':
+            queryset = queryset.filter(sub_branch_code=branch)
+        if queryset.count() == 0:
+            messages.error(request, "The Exam Paper is not present for this filters")
+        if sem or branch or sub_code:
+            return render(request, 'main/exam.html',
+                          {'branches': branchlist, 'queryset': queryset, 'branchid': branch, 'sem': str(sem),
+                           'sub_code': sub_code})
+        return render(request, 'main/exam.html', {'branches': branchlist, 'input': True})
 
-    # return render(request,'home/index.html',
-    return render(request,'main/exam.html')
+
+    elif request.method == 'POST':
+        sem = request.POST['sem']
+        branch = request.POST['branch']
+        sub_code = request.POST['sub_code']
+        q = queryset = GtuExam.objects.annotate(
+               year = Substr('sub_academic_term', 2, 4),  # Year part
+               sess =  Substr('sub_academic_term', 1, 1),  # Season part
+        ).order_by('year','sess','sub_code').reverse()
+        if sem != '0':
+            queryset = queryset.filter(sub_sem=sem)
+        if branch != '00':
+            queryset = queryset.filter(sub_branch_code=branch)
+        if sub_code:
+            queryset = q.filter(sub_code=sub_code)
+        if queryset.count() == 0:
+            messages.error(request, "The Exam Paper is not present for this filters")
+
+        return render(request, 'main/exam.html',
+                      {'branches': branchlist, 'queryset': queryset, 'branchid': branch, 'sem': str(sem),
+                       'sub_code': sub_code})
+
+    return render(request, 'main/exam.html', {'branches': branchlist, 'input': True})

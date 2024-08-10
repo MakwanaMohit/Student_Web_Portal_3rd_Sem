@@ -1,0 +1,207 @@
+{% extends 'Student_app/base.html' %}
+{% block css %}
+    <style>
+        .hello {
+            background-color: #90bcb1;
+            border-radius: 5px;
+        }
+
+        .card-login {
+            background-color: #e3f3ef;
+        }
+
+        .form-input {
+            border: 2px solid #141c1a;
+            background-color: #90bcb1;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .h-custom {
+            height: calc(100% - 73px);
+        }
+
+        @media (max-width: 450px) {
+            .h-custom {
+                height: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+{% block body %}
+    <section class="p-5 hello">
+        <div class="container-fluid h-custom">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+
+
+                <div class="col-lg-6 mb-5 mb-lg-0 ">
+                    <div class="card card-login">
+                        <div class="card-body py-5 px-md-5">
+                            {% if form %}
+
+                                {% if form.errors %}
+                                    <div class="form-errors">
+                                        <ul>
+                                            {% for field in form %}
+                                                {% for error in field.errors %}
+                                                    <li>{{ field.label }}: {{ error }}</li>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                                <form action="{% url 'student profile' %}" method="post"
+                                      id="login-form" enctype="multipart/form-data">{% csrf_token %}
+                                    {% if form.instance.profile_picture %}
+                                        <div class="form-outline mb-4 ">
+                                            <img src="{{ form.instance.profile_picture.url }}" height="100px"
+                                                 width="100px"><br>
+                                            <hr>
+                                        </div>{% endif %}
+                                    <div class="form-outline mb-4 ">
+                                        <label>Student Name:</label>
+                                        <b>{{ form.instance.stu_name }}</b> |
+                                        <label>Enrollment Number:</label>
+                                        <b>{{ form.instance.stu_enroll }}</b> |
+                                        <label>Semester:</label>
+                                        <b>{{ form.instance.stu_sem }}</b>
+                                        <hr>
+                                    </div>
+                                    <div class="form-outline mb-4 ">
+                                        <label>Student branch:</label>
+                                        <b>{{ form.instance.stu_branch }}</b>
+                                        <hr>
+                                    </div>
+                                    <div class="form-outline mb-4 ">
+                                        <label for="is-passed">Student is passed ? (not Detain):</label>
+                                        <input id="is-passed" disabled type="checkbox"
+                                               {% if form.instance.is_passed %}checked{% endif %}> |
+                                        <label for="is-passout">Student is passout ?:</label>
+                                        <input id="is-passout" disabled type="checkbox"
+                                               {% if form.instance.is_passout %}checked{% endif %}>
+                                        <hr>
+                                    </div>
+                                    <div class=" form-outline mb-4">
+                                        <label for="{{ form.profile_picture.id_for_label }}">Profile Picture:</label>
+                                        {{ form.profile_picture }}
+                                        <hr>
+                                    </div>
+                                    <div class="form-outline mb-4 ">
+                                        <label for="{{ form.adhar_no.id_for_label }}">Adhar Number:</label>
+                                        {{ form.adhar_no }}
+                                        <hr>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label for="{{ form.stu_DOB.id_for_label }}">Date of Birth:</label>
+                                        {{ form.stu_DOB }} |
+                                        <label for="{{ form.gender.id_for_label }}">Gender:</label>
+                                        {{ form.gender }} |
+                                        <hr>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label for="{{ form.stu_mobile_num.id_for_label }}">Mobile Number:</label>
+                                        {{ form.stu_mobile_num }} |
+                                        <label for="{{ form.stu_parents_mobile_num.id_for_label }}">Parents Mobile
+                                            Number:</label>
+                                        {{ form.stu_parents_mobile_num }}
+                                        <hr>
+                                    </div>
+
+                                    <div class="form-outline mb-4">
+                                        <label for="{{ form.stu_address.id_for_label }}">Address:</label>
+                                        {{ form.stu_address }}
+                                        <hr>
+                                    </div>
+
+
+                                    <!-- Submit button -->
+                                    <button type="submit" class="btn btn-primary btn-block mb-4">
+                                        Update Profile
+                                    </button>
+                                </form>
+                            {% else %}
+                                <h5 style="justify-content: left" class="fc-header-title" id="loginLabel">Student
+                                    Profile</h5><br>
+                                {% if student.profile_picture %}
+                                    <div class="form-outline mb-4 ">
+                                        <img src="{{ student.profile_picture.url }}" height="100px" width="100px"><br>
+                                        <hr>
+                                    </div>{% endif %}
+                                <div class="form-outline mb-4 ">
+                                    <label>Student Name:</label>
+                                    <b>{{ student.stu_name }}</b> |
+                                    <label>Enrollment Number:</label>
+                                    <b>{{ student.stu_enroll }}</b> |
+                                    <label>Semester:</label>
+                                    <b>{{ student.stu_sem }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Student branch:</label>
+                                    <b>{{ student.stu_branch }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label for="is-passed">Student is passed ? (not Detain):</label>
+                                    <input id="is-passed" disabled type="checkbox"
+                                           {% if student.is_passed %}checked{% endif %}> |
+                                    <label for="is-passout">Student is passout ?:</label>
+                                    <input id="is-passout" disabled type="checkbox"
+                                           {% if student.is_passout %}checked{% endif %}>
+                                    <hr>
+                                </div>
+
+                                <div class="form-outline mb-4 ">
+                                    <label>Adhar Number:</label>
+                                    <b>{{ student.adhar_no }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Date of Birth:</label>
+                                    <b>{{ student.stu_DOB }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Gender:</label>
+                                    <b>{{ student.gender }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Student Mobile No:</label>
+                                    <b>{{ student.stu_mobile_num }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Student Parents Mobile No:</label>
+                                    <b>{{ student.stu_parents_mobile_num }}</b>
+                                    <hr>
+                                </div>
+                                <div class="form-outline mb-4 ">
+                                    <label>Student Address:</label>
+                                    <b>{{ student.stu_address }}</b>
+                                    <hr>
+                                </div>
+                                <form method="post">{% csrf_token %}
+                                    <input type="hidden" value="true" name="update" id="update">
+                                    <button type="submit" class="btn btn-primary btn-block mb-4">
+                                        Update Profile
+                                    </button>
+                                </form>
+
+
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
