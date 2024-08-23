@@ -1,46 +1,72 @@
 {% extends 'Student_app/base.html' %}
+{% block css %}
+    <style>
+        .hello {
+            background-color: #417690;
+            border-radius: 5px;
+        }
 
+        .card-login {
+            background-color: #e3f3ef;
+        }
+
+        .form-input {
+            border: 2px solid #141c1a;
+            background-color: #417690;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .h-custom {
+            height: calc(100% - 73px);
+        }
+
+        @media (max-width: 450px) {
+            .h-custom {
+                height: 100%;
+            }
+        }
+    </style>
+{% endblock %}
 {% block body %}
-    <h3>Welcome to Student portal</h3>
-    <div class="accordion" id="result-publish">
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#result"
-                        aria-expanded="true" aria-controls="result">
-                    Show Results
-                </button>
-            </h2>
-            <div id="result" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                <div class="accordion-body">
-                    <ul class="list-group">
-                        {% for result in results %}
-                            <li class="list-group-item">
-                                <h6>SEMESTER {{ result.2 }}-{{ result.1 }} {{ result.0 }}-{{ result.3 }} | result
-                                    published</h6>
-                                <form action="{% url 'student result' %}" method="post" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input name="session" type="hidden" value="{{ result.1 }}-{{ result.0 }}">
-                                    <input name="exam-type" type="hidden" value="Sem{{ result.2 }}-{{ result.3 }}">
-                                    <input type="hidden" name="show" id="show" value="true">
-                                    <input class="btn" type="submit" value="View">
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
+    <section class="p-5 hello">
+        <h3>Welcome to Student portal</h3>
+        <div class="accordion" id="result-publish">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#result"
+                            aria-expanded="true" aria-controls="result">
+                        Show Results
+                    </button>
+                </h2>
+                <div id="result" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        <ul class="list-group">
+                            {% for result in results %}
+                                <li class="list-group-item">
+                                    <h6>SEMESTER {{ result.2 }}-{{ result.1 }} {{ result.0 }}-{{ result.3 }} | result
+                                        published</h6>
+                                    <form action="{% url 'student result' %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input name="session" type="hidden" value="{{ result.1 }}-{{ result.0 }}">
+                                        <input name="exam-type" type="hidden" value="Sem{{ result.2 }}-{{ result.3 }}">
+                                        <input type="hidden" name="show" id="show" value="true">
+                                        <input class="btn" type="submit" value="View">
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
-
-
-    {% if user.is_authenticated %}
-        <h3>Hello {{ fname }}</h3>
-        <h4>You're Successfully Logged in.</h4>
-        <a href="{% url 'student signout' %}">SignOut</a>
-    {% else %}
-        <a href="{% url 'student signup' %}">SignUp</a>
-        <a href="{% url 'student signin' %}">SignIn</a>
-    {% endif %}
+    </section>
 {% endblock %}
