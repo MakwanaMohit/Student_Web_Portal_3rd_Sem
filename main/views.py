@@ -23,7 +23,7 @@ def homehii(request):
     #                 q.save()
     #                 print("save sucessfully key = ",key,q.sub_pdf.name[-23:])
     # ob = 908
-    for row in csv.reader(open(r'D:\study\5th sem  it\Internship II\New folder\data.csv', "r")):
+    for row in csv.reader(open(r'D:/study/5th sem  it/Internship II/New folder/data.csv', "r")):
         try:
             response = requests.get(row[0])
             if response.status_code == 200:
@@ -75,7 +75,7 @@ def gtu_exam_fetch():
             filename = '-'.join(split[-3:])
             response = requests.get(url)
             if response.status_code == 200:
-                pat = r"D:\study\5th sem  it\Internship II\Student_Web_Portal_3rd_Sem\media\home\pdfs\syllabus\exam_test.pdf"
+                pat = r"D:/study/5th sem  it/Internship II/Student_Web_Portal_3rd_Sem/media/home/pdfs/syllabus/exam_test.pdf"
                 with open(pat, 'wb+') as f:
                     f.write(response.content)
 

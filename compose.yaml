@@ -7,10 +7,14 @@
 # You can add other services your application may depend on here, such as a
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
+version: '1.2.3'
 services:
   server:
-    build:
+    build: 
       context: .
+    command: bash -c "python3 manage.py collectstatic --noinput && python3 manage.py makemigrations && python3 manage.py migrate && gunicorn 'Student_Website.wsgi' --bind=0.0.0.0:8000"
+
+    container_name: studentmng
     ports:
       - 8000:8000
 

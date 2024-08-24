@@ -33,7 +33,7 @@ def home(request):
         list(Publish_Result.objects.filter(published=True).values_list('year', 'session', 'sem', 'type').distinct()),
         reverse=True)
 
-    return render(request, "Student_app\home.html", {'user': request.user, 'results': publish})
+    return render(request, "Student_app/home.html", {'user': request.user, 'results': publish})
 
 
 def signup(request):
@@ -85,27 +85,27 @@ def signup(request):
                 request.session['enrollment'] = username
                 email = request.POST['email']
                 messages.error(request, 'Please enter a correct captcha for login ')
-                return render(request, "Student_app\signup.html",
+                return render(request, "Student_app/signup.html",
                               {"form": form, 'url_name': reverse('student signup'), 'email': email})
         else:
             if valid_enroll(enroll):
                 if user_is_exits(enroll):
                     messages.error(request, 'this user is arlady exits in system please use different enrollment')
-                    return render(request, "Student_app\signup.html",
+                    return render(request, "Student_app/signup.html",
                                   {'url_name': reverse('student signup'), 'signup_enroll': True})
                 else:
                     form = Student_register()
 
                     request.session['enrollment'] = enroll
-                    return render(request, "Student_app\signup.html",
+                    return render(request, "Student_app/signup.html",
                                   {"form": form, 'url_name': reverse('student signup')})
             else:
                 messages.error(request, 'this is not a valid enrollment ! Please enter a valid enrollment')
-                return render(request, "Student_app\signup.html",
+                return render(request, "Student_app/signup.html",
                               {'url_name': reverse('student signup'), 'signup_enroll': True})
 
-    return render(request, "Student_app\signup.html", {'url_name': reverse('student signup'), 'signup_enroll': True})
-    # return render(request, "Student_app\signup_enroll.html",{'url_name':reverse('student signup'),'signup_enroll':True ,'form':form})
+    return render(request, "Student_app/signup.html", {'url_name': reverse('student signup'), 'signup_enroll': True})
+    # return render(request, "Student_app/signup_enroll.html",{'url_name':reverse('student signup'),'signup_enroll':True ,'form':form})
 
 
 @login_not_required_restric
@@ -135,7 +135,7 @@ def signin(request):
             else:
                 form = Student_login()
                 messages.error(request, 'Please Enter a valid username or password for login')
-                return render(request, "Student_app\signin.html", {
+                return render(request, "Student_app/signin.html", {
                     'form': form,
                     'enrollment_value': request.POST['enrollment_number']
                 })
@@ -144,14 +144,14 @@ def signin(request):
         else:
             form = Student_login()
             messages.error(request, 'Please enter a valid captcha ')
-            return render(request, "Student_app\signin.html", {
+            return render(request, "Student_app/signin.html", {
                 'form': form,
                 'enrollment_value': request.POST['enrollment_number'],
                 'password': request.POST['password']
             })
 
     form = Student_login()
-    return render(request, "Student_app\signin.html", {
+    return render(request, "Student_app/signin.html", {
         'form': form,
 
     })
@@ -183,7 +183,7 @@ def forgot(request):
                     form = Student_register()
                     request.session['enrollment'] = username
                     messages.error(request,f'email is dosen\'t matching with email that we have \n Please try again or contact your superfaculty to change the email')
-                    return render(request, "Student_app\signup.html", {"form": form, 'url_name': reverse('student forgot'), 'forgot': True})
+                    return render(request, "Student_app/signup.html", {"form": form, 'url_name': reverse('student forgot'), 'forgot': True})
 
                 password = generate_password()
                 student.password = password
@@ -206,13 +206,13 @@ def forgot(request):
                 Email.fail_silently = True
                 Email.send()
                 messages.success(request,
-                                 f'your new password is send to you register email {student.email[:7]}********* \n')
+                                 f'your new password is send to you register email {student.email[:7]}*********\n')
                 return redirect('student signin')
             else:
                 form = Student_register()
                 request.session['enrollment'] = username
                 messages.error(request, 'Please enter a correct captcha for login ')
-                return render(request, "Student_app\signup.html",
+                return render(request, "Student_app/signup.html",
                               {"form": form, 'url_name': reverse('student forgot'), 'forgot': True,
                                'email': request.POST['email']})
         else:
@@ -224,18 +224,18 @@ def forgot(request):
                     request.session['enrollment'] = enroll
                     messages.error(request,
                                    f'Enter the email starts with {use.email[:7]}********* that given by you in the registration time')
-                    return render(request, "Student_app\signup.html",
+                    return render(request, "Student_app/signup.html",
                                   {"form": form, 'url_name': reverse('student forgot'), 'forgot': True})
                 else:
                     messages.error(request, 'this user is not exits in system please use different enrollment')
-                    return render(request, "Student_app\signup.html",
+                    return render(request, "Student_app/signup.html",
                                   {'url_name': reverse('student forgot'), 'signup_enroll': True, 'forgot': True})
             else:
                 messages.error(request, 'this is not a valid enrollment ! Please enter a valid enrollment')
-                return render(request, "Student_app\signup.html",
+                return render(request, "Student_app/signup.html",
                               {'url_name': reverse('student forgot'), 'signup_enroll': True, 'forgot': True})
 
-    return render(request, "Student_app\signup.html",
+    return render(request, "Student_app/signup.html",
                   {'url_name': reverse('student forgot'), 'signup_enroll': True, 'forgot': True})
 
 

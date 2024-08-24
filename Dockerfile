@@ -20,26 +20,31 @@ WORKDIR /app
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
-ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
+
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libmariadb-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN  apt-get install -y \
+    python3-cffi \
+    libcairo2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    shared-mime-info
+
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Switch to the non-privileged user to run the application.
-USER appuser
+
 
 # Copy the source code into the container.
 COPY . .
@@ -48,4 +53,6 @@ COPY . .
 EXPOSE 8000
 
 # Run the application.
+RUN python3 manage.py collectstatic
+
 CMD gunicorn 'Student_Website.wsgi' --bind=0.0.0.0:8000

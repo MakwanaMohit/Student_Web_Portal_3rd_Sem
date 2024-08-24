@@ -113,7 +113,7 @@ def signin(request):
             else:
                 form = Faculth_login()
                 messages.error(request,'Please Enter a valid username or password for login')
-                return render(request, "faculty\signin.html", {
+                return render(request, "faculty/signin.html", {
                     'form': form,
                     'email': email
                 })
@@ -122,14 +122,14 @@ def signin(request):
         else:
             form = Faculth_login()
             messages.error(request,'Please enter a valid captcha ')
-            return render(request, "faculty\signin.html", {
+            return render(request, "faculty/signin.html", {
                 'form': form,
                 'email':request.POST.get('email',""),
                 'password': request.POST['password']
             })
 
     form = Faculth_login()
-    return render(request,"faculty\signin.html",{
+    return render(request,"faculty/signin.html",{
         'form':form,
 
     })

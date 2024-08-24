@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from captcha import urls
 from faculty.views import dashbord
+from django.conf.urls.static import static
+from django.conf import settings
 urlpatterns = [
     # path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
     # path('jet/', include('jet.urls', 'jet')),
@@ -27,7 +29,7 @@ urlpatterns = [
     path('captcha/',include('captcha.urls')),
     path('student',include('Student_app.urls')),
     path('faculty',include('faculty.urls'))
-]
+]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 admin.site.site_header = 'Student Webstie Administration'
 admin.site.index_title = 'Student Website'
 admin.site.site_title = 'Student Website Administration'
