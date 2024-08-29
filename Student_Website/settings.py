@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from Student_Website.info import *
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,11 +32,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:10','192.168.1.10']
 
 # Email defination
-EMAIL_USE_TLS = EMAIL_USE_TLS
-EMAIL_USE_TLS = EMAIL_HOST
-EMAIL_HOST_USER = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD
-EMAIL_PORT = EMAIL_PORT
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS',True)
+EMAIL_USE_TLS = os.environ.get('EMAIL_HOST','smtp.gmail.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER','your-host-user')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','your-password')
+EMAIL_PORT = os.environ.get('EMAIL_PORT',587)
 
 # Metarial settings
 SHOW_THEMES = True
@@ -104,16 +107,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 AUTH_USER_MODEL = 'user.User'
 
-DATABASESaa = {
+DDATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'studentweb',
-        'HOST':'localhost',
-        'PORT': 3306,
-        'USER':'studentw',
-        'PASSWORD':'project_to_manage_students'
+        'NAME': os.environ.get('MYSQL_DATABASE', 'your_db_name'),
+        'USER': os.environ.get('MYSQL_USER', 'your_db_user'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'your_db_password'),
+        'HOST': os.environ.get('MYSQL_HOST', 'db'),  # 'db' is the service name in docker-compose
+        'PORT': os.environ.get('MYSQL_PORT', '3306'),
     }
 }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -122,7 +126,6 @@ DATABASES = {
 }
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
 CSRF_TRUSTED_ORIGINS = ['http://yourdomain.com', 'http://localhost:8080']
 
 # SECURE_SSL_REDIRECT = True
@@ -172,7 +175,7 @@ STATIC_URL = 'static/'
 # Add these new lines
 
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -1,20 +1,43 @@
+version: '3.8'
+
 services:
-  gunicorn:
-    build: 
-      context: .
-    command: bash -c "python3 manage.py collectstatic --noinput && python3 manage.py makemigrations && python3 manage.py migrate && gunicorn 'Student_Website.wsgi' --bind=0.0.0.0:8000"
-    image: studentmanagement
-    container_name: studentmng
-    expose:  # Use 'expose' instead of 'ports' to make it accessible to Nginx only
-      - 8000
-    network_mode : host
-  nginx:
-    image: nginx
-    # expose:
-    #   - 80
-    ports:
-      - 8080:80  # Expose Nginx on port 8080 of the host
+  web:
+    build: .
+    image: mohitmakwana/student_website:latest
+    command: gunicorn Student_Website.wsgi --bind=0.0.0.0:8000
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf  # Mount the Nginx configuration file
+      - .:/app
+      - ./db.sqlite3:/app/db.sqlite3
+      - static_volume:/app/static
+      - media_volume:/app/media
+    expose:
+      - 8000
+    env_file:
+      - .env
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8080:80"
     depends_on:
-      - gunicorn
+      - web
+
+volumes:
+  static_volume:
+    driver: local
+    # Optional: define the host path to ensure consistency, if required
+    driver_opts:
+      o: bind
+      type: none
+      device: ./static
+
+  media_volume:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./media

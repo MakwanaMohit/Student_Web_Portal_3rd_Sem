@@ -61,7 +61,7 @@
       <div id="collapse-pass-{{ semester.sem }}" class="accordion-collapse collapse" data-bs-parent="#accordionpanelExample">
         <div class="accordion-body">
 {#            {% for subject in semester.subjects %}<h2>hello for loop{{ subject.sub.sub_name }}</h2>{% endfor %}#}
-        <div class="accordion " id="subject-show">
+        <div class="accordion " id="subject-show-{{ semester.sem }}">
           {% for subject in semester.subjects %}
             <div class="accordion-item  ">
                 <h6><a href="{% url 'admin:Student_app_student_marks_changelist' %}?Assigned_Sub_Faculty__fac_id__exact={{ subject.sub.Assigned_Sub_Faculty_id }}"> {{ subject.sub.Assigned_Sub_Faculty.fac_name }} --> {{ subject.sub.Assigned_Sub_Faculty.email }} </a></h6>
@@ -91,7 +91,7 @@
                   </div>
                 </button>
               </h2>
-              <div id="collapse-pass-subject-{{ subject.sub.sub_id }}" data-bs-parent="#subject-show" class="accordion-collapse collapse">
+              <div id="collapse-pass-subject-{{ subject.sub.sub_id }}" data-bs-parent="#subject-show-{{ semester.sem }}" class="accordion-collapse collapse">
                 <div class="accordion-body">
                   <div class="card">
                       <div class="row">

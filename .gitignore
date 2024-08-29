@@ -1,5 +1,7 @@
 venv
 __pycache__
 .idea
-staticfiles
+static
+media
+.env
 Student_Website/info.py

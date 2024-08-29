@@ -29,7 +29,8 @@ urlpatterns = [
     path('captcha/',include('captcha.urls')),
     path('student',include('Student_app.urls')),
     path('faculty',include('faculty.urls'))
-]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 admin.site.site_header = 'Student Webstie Administration'
 admin.site.index_title = 'Student Website'
 admin.site.site_title = 'Student Website Administration'
