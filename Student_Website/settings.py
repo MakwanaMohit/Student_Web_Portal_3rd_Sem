@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from Student_Website.info import *
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,14 +26,14 @@ SECRET_KEY = 'django-insecure-7vj7&i%ly=_x$^ym4z^=1%c_36lqv5sz=%k#yngm-mgoy&5ld5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:10','192.168.1.10']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS','localhost;127.0.0.1;192.168.1.1').split(';')
 
 # Email defination
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS',True)
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS',False)
 EMAIL_USE_TLS = os.environ.get('EMAIL_HOST','smtp.gmail.com')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER','your-host-user')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD','your-password')
-EMAIL_PORT = os.environ.get('EMAIL_PORT',587)
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT',587))
 
 # Metarial settings
 SHOW_THEMES = True
@@ -126,7 +123,7 @@ DATABASES = {
 }
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['http://yourdomain.com', 'http://localhost:8080']
+CSRF_TRUSTED_ORIGINS = os.environ.get('HOST_ADDRESS','http://localhost:80').split(';')
 
 # SECURE_SSL_REDIRECT = True
 # SESSION_COOKIE_SECURE = True

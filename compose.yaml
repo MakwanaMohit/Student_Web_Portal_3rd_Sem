@@ -2,14 +2,18 @@ version: '3.8'
 
 services:
   web:
-    build: .
-    image: mohitmakwana/student_website:latest
+    image: mohitmakwana/studentmng:latest  
     command: gunicorn Student_Website.wsgi --bind=0.0.0.0:8000
     volumes:
-      - .:/app
-      - ./db.sqlite3:/app/db.sqlite3
+      # - .:/app
+      # - ./db.sqlite3:/app/db.sqlite3
       - static_volume:/app/static
       - media_volume:/app/media
+    entrypoint: >
+      sh -c "
+      python manage.py migrate &&
+      gunicorn Student_Website.wsgi --bind=0.0.0.0:8000
+      "
     expose:
       - 8000
     env_file:
@@ -29,15 +33,7 @@ services:
 volumes:
   static_volume:
     driver: local
-    # Optional: define the host path to ensure consistency, if required
-    driver_opts:
-      o: bind
-      type: none
-      device: ./static
 
   media_volume:
     driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ./media
+
