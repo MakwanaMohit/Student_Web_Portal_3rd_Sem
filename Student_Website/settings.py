@@ -104,23 +104,24 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 AUTH_USER_MODEL = 'user.User'
 
-DDATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('MYSQL_DATABASE', 'your_db_name'),
-        'USER': os.environ.get('MYSQL_USER', 'your_db_user'),
-        'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'your_db_password'),
-        'HOST': os.environ.get('MYSQL_HOST', 'db'),  # 'db' is the service name in docker-compose
-        'PORT': os.environ.get('MYSQL_PORT', '3306'),
-    }
-}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+if os.environ.get('USE_MYSQL',False):
+    print("Using MYSQL as Database")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('MYSQL_DATABASE', 'your_db_name'),
+            'USER': os.environ.get('MYSQL_USER', 'your_db_user'),
+            'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'your_db_password'),
+            'HOST': os.environ.get('MYSQL_HOST', 'db'),  # 'db' is the service name in docker-compose
+            'PORT': os.environ.get('MYSQL_PORT', '3306'),
+        }
+    }
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = os.environ.get('HOST_ADDRESS','http://localhost:80').split(';')

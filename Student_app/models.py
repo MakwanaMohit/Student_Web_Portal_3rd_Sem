@@ -121,7 +121,7 @@ class Publish_Result(models.Model):
         REGULAR = 'REGULAR', 'Regular'
         REMEDIAL = 'REMEDIAL', 'Remedial'
 
-    id = models.CharField(max_length=16, primary_key=True, unique=True)
+    id = models.CharField(max_length=17, primary_key=True, unique=True)
     sem = models.IntegerField(default=5)
     year = models.CharField(max_length=4, default='2022')
     session = models.CharField(max_length=50,

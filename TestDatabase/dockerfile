@@ -1,0 +1,13 @@
+FROM mysql:latest
+
+# Set static environment variables for the default database and root password.
+# (Users can override the MYSQL_ROOT_PASSWORD during container startup if needed.)
+ENV MYSQL_DATABASE=studentmng_db
+ENV MYSQL_ROOT_PASSWORD=your_root_password
+
+# Copy the SQL dump file into the initialization directory.
+# The MySQL image will run this script to create the database and tables.
+COPY data.sql /docker-entrypoint-initdb.d/
+
+# Expose the default MySQL port.
+EXPOSE 3306
